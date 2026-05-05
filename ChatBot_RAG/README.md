@@ -53,6 +53,6 @@ Open [http://localhost:8501](http://localhost:8501) and start asking questions.
 
 ## Limitations
 
-- **No conversation memory** — each question is answered independently without knowledge of prior questions in the session.
-- **Text only** — images and tables inside PDFs are not extracted.
-- **English-optimised** — the default embedding model performs best on English text.
+- **No conversation memory** - each question is answered independently without knowledge of prior questions in the session.
+- **Text only** - images and tables inside PDFs are not extracted.
+- **English-optimised** - the default embedding model performs best on English text.
