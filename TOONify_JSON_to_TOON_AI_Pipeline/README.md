@@ -205,7 +205,8 @@ Chooses format based on:
 
 ## 🔷 Roadmap
 
-- [ ] Python Library 
+- [ ] Python Library
+- [ ] Nested TOON support
 - [ ] FastAPI and "try it out" web interface
 - [ ] Benchmark
 
