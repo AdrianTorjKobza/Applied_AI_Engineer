@@ -18,9 +18,9 @@ A RAG system designed for pdf documents and technical manuals. It retrieves rele
 ## Setup & Execution
 1. Clone the repo.
 2. Initialize Ollama: Ensure your local server is running ollama serve.
-3. Setup Env: Create a virtual environment (```bash python -m venv venv) and activate it.
-4. Install dependencies: Run ```bash pip install -r requirements.txt.
-5. Launch: Run ```bash python app.py. The first ingestion might take a moment as it processes images through Moondream.
+3. Setup Env: Create a virtual environment (`python -m venv venv`) and activate it.
+4. Install dependencies: Run `pip install -r requirements.txt`.
+5. Launch: Run `bash python app.py`. The first ingestion might take a while as it processes images through Moondream.
 
 ## Usage
 1. Upload a PDF document or technical manual.
