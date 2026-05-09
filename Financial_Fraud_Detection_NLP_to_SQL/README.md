@@ -32,6 +32,4 @@ This project demonstrates a system where non-technical fraud analysts can write 
 On Windows: `venv\Scripts\activate`
 On macOS/Linux: `source venv/bin/activate`
 5. **Install Dependencies:** `pip install -r requirements.txt`
-6. **Run the app:**
-   ```bash
-   streamlit run app.py
+6. **Run the app:** `streamlit run app.py`
