@@ -2,14 +2,14 @@
 
 This project demonstrates a system where non-technical fraud analysts can write rules in natural language, which are then converted into validated PostgreSQL queries via a local LLM (Llama 3 8B).
 
+## Proof of Concept Demo
+<img src="https://github.com/AdrianTorjKobza/Applied_AI_Engineer_Projects/blob/30d1bdcf3bd90fc7ad69e65ed3a445677cc8eac9/Financial_Fraud_Detection_NLP_to_SQL/demo.gif">
+
 ## Features
 - **Privacy-First:** Powered by self-hosted Llama 3 via Ollama.
 - **SQL Validation:** Uses `sqlglot` to ensure syntax integrity before execution.
 - **Multi-Tenant Ready:** Architecture supports dynamic schema injection via RAG.
 - **Mock Execution:** Runs queries against an in-memory database to verify results.
-
-## Proof of Concept Demo
-[Link to your recording here]
 
 ## Tech Stack
 - **Language:** Python 3.9+
@@ -29,15 +29,9 @@ This project demonstrates a system where non-technical fraud analysts can write 
 2. **Pull Model:** `ollama pull llama3:8b`.
 3. **Create a virtual environment:** `python -m venv venv`.
 4. **Activate the environment:**
-- On Windows:
-```bash
-venv\Scripts\activate
-- On macOS/Linux:
-```bash
-source venv/bin/activate
-5. **Install Dependencies:**
-   ```bash
-   pip install -r requirements.txt
+On Windows: `venv\Scripts\activate`
+On macOS/Linux: `source venv/bin/activate`
+5. **Install Dependencies:** `pip install -r requirements.txt`
 6. **Run the app:**
    ```bash
    streamlit run app.py
