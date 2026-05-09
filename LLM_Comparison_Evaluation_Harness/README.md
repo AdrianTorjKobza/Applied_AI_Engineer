@@ -150,7 +150,7 @@ llm-eval-harness/
 ```
 
 ---
-## 🧰 Tech Stack
+## Tech Stack
 
 | Layer | Library | Why |
 |---|---|---|
