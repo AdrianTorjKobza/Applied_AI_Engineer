@@ -1,0 +1,61 @@
+prompts:
+
+  # ── Text Quality ────────────────────────────────────────────────
+  - id: tq_01
+    task_type: text_quality
+    user: "Write a short paragraph describing the sensation of walking through a dense forest at dawn."
+
+  - id: tq_02
+    task_type: text_quality
+    user: "Explain the concept of entropy in thermodynamics using an everyday analogy."
+
+  - id: tq_03
+    task_type: text_quality
+    user: "Write a two-sentence abstract for a fictional paper about the social habits of deep-sea fish."
+
+  - id: tq_04
+    task_type: text_quality
+    user: "Describe the economic consequences of a sudden 50% drop in global shipping capacity."
+
+  - id: tq_05
+    task_type: text_quality
+    user: "Summarise the main arguments for and against universal basic income in under 150 words."
+
+  # ── Instruction Following ───────────────────────────────────────
+  - id: if_01
+    task_type: instruction_following
+    system: "You are a concise assistant. Answer in bullet points only. Use no more than 5 bullets."
+    user: "What are the key differences between supervised, unsupervised, and reinforcement learning?"
+    reference: |
+      • Supervised learning uses labelled data to learn input-output mappings.
+      • Unsupervised learning finds patterns in unlabelled data.
+      • Reinforcement learning learns via rewards and penalties from an environment.
+      • Supervised needs explicit labels; unsupervised does not.
+      • RL involves an agent interacting with an environment over time.
+
+  - id: if_02
+    task_type: instruction_following
+    system: "Respond only with a valid JSON object. Do not include any other text or markdown."
+    user: "Return a JSON object with three fields: capital, population (as a number), and continent for France."
+    reference: '{"capital": "Paris", "population": 68000000, "continent": "Europe"}'
+
+  - id: if_03
+    task_type: instruction_following
+    user: "List exactly 4 programming languages that are primarily used for data science. Number them 1–4."
+    reference: "1. Python\n2. R\n3. Julia\n4. Scala"
+
+  - id: if_04
+    task_type: instruction_following
+    system: "You are a formal business writer. Never use contractions or informal language."
+    user: "Write a one-sentence apology to a client for a delayed delivery."
+
+  - id: if_05
+    task_type: instruction_following
+    user: >
+      Translate the following sentence into Spanish, French, and German.
+      Present each translation on a separate line, prefixed with the language name and a colon.
+      Sentence: "The quick brown fox jumps over the lazy dog."
+    reference: |
+      Spanish: El zorro marrón rápido salta sobre el perro perezoso.
+      French: Le rapide renard brun saute par-dessus le chien paresseux.
+      German: Der schnelle braune Fuchs springt über den faulen Hund.

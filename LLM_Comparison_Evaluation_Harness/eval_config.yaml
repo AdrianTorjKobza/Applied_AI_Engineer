@@ -1,0 +1,18 @@
+run_name: sample_eval
+
+models:
+  - name: llama3:8b
+    alias: "LLaMA-3 8B"
+  - name: mistral:7b
+    alias: "Mistral 7B"
+
+judge:
+  model: llama3:8b
+  base_url: http://localhost:11434
+  temperature: 0.0
+
+dataset_path: datasets/sample/prompts.yaml
+output_dir: reports
+scorers:
+  - llm_judge
+max_concurrent: 3

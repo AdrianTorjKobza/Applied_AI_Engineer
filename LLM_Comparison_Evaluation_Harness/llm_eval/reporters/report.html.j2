@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ result.run_name }} — LLM Eval Report</title>
+  <style>
+    /* ── TOKENS ───────────────────────────────────────────────── */
+    :root {
+      --bg:       #0d0f14;
+      --surface:  #151820;
+      --card:     #1c2030;
+      --border:   #2a2f42;
+      --accent:   #4f8ef7;
+      --accent2:  #a78bfa;
+      --green:    #34d399;
+      --amber:    #fbbf24;
+      --red:      #f87171;
+      --text:     #e2e8f0;
+      --muted:    #64748b;
+      --mono:     'JetBrains Mono', 'Fira Code', monospace;
+      --sans:     'DM Sans', system-ui, sans-serif;
+      --display:  'Space Grotesk', var(--sans);
+      --radius:   10px;
+      --shadow:   0 4px 24px rgba(0,0,0,.45);
+    }
+
+    /* ── RESET ────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 15px;
+      line-height: 1.65;
+      min-height: 100vh;
+    }
+
+    /* ── FONTS (self-contained via Google Fonts CDN) ──────────── */
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    /* ── LAYOUT ───────────────────────────────────────────────── */
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+    /* ── HEADER ───────────────────────────────────────────────── */
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 32px 0 28px;
+      background: linear-gradient(180deg, #111420 0%, var(--bg) 100%);
+    }
+    .header-inner {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .logo { font-family: var(--display); font-size: 11px; font-weight: 700;
+            letter-spacing: .14em; text-transform: uppercase; color: var(--accent);
+            margin-bottom: 6px; }
+    h1 { font-family: var(--display); font-size: 2rem; font-weight: 700;
+         line-height: 1.15; color: #fff; }
+    .meta { font-size: 13px; color: var(--muted); margin-top: 6px; }
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 600; letter-spacing: .04em;
+      text-transform: uppercase; background: rgba(79,142,247,.15);
+      color: var(--accent); border: 1px solid rgba(79,142,247,.3);
+    }
+
+    /* ── NAV ──────────────────────────────────────────────────── */
+    nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .nav-links { display: flex; gap: 0; overflow-x: auto; }
+    .nav-links a {
+      display: block; padding: 14px 20px; font-size: 13px; font-weight: 500;
+      color: var(--muted); text-decoration: none; white-space: nowrap;
+      border-bottom: 2px solid transparent; transition: all .2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* ── SECTIONS ─────────────────────────────────────────────── */
+    section { padding: 48px 0; border-bottom: 1px solid var(--border); }
+    section:last-child { border: none; }
+    .section-title {
+      font-family: var(--display); font-size: 1.25rem; font-weight: 700;
+      color: #fff; margin-bottom: 6px;
+    }
+    .section-sub { color: var(--muted); font-size: 13px; margin-bottom: 28px; }
+
+    /* ── CARDS ────────────────────────────────────────────────── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      box-shadow: var(--shadow);
+    }
+
+    /* ── SUMMARY GRID ─────────────────────────────────────────── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+    .stat-card { position: relative; overflow: hidden; }
+    .stat-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+    }
+    .stat-label { font-size: 11px; font-weight: 600; text-transform: uppercase;
+                  letter-spacing: .1em; color: var(--muted); margin-bottom: 8px; }
+    .stat-value { font-family: var(--display); font-size: 2rem; font-weight: 700; color: #fff; }
+    .stat-sub   { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    /* ── LEADERBOARD TABLE ────────────────────────────────────── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th {
+      text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .08em; color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+    td { padding: 12px 14px; border-bottom: 1px solid rgba(42,47,66,.6); vertical-align: top; }
+    tr:last-child td { border: none; }
+    tr:hover td { background: rgba(255,255,255,.025); }
+    .rank { font-family: var(--display); font-weight: 700; font-size: 18px; color: var(--muted); }
+    .rank.gold   { color: #fbbf24; }
+    .rank.silver { color: #94a3b8; }
+    .rank.bronze { color: #c08040; }
+    .model-name { font-weight: 600; color: #fff; }
+    .score-pill {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-family: var(--mono); font-size: 13px; font-weight: 600;
+    }
+    .score-high { background: rgba(52,211,153,.15); color: var(--green); }
+    .score-mid  { background: rgba(251,191,36,.15);  color: var(--amber); }
+    .score-low  { background: rgba(248,113,113,.15); color: var(--red); }
+
+    /* ── SCORE BAR ────────────────────────────────────────────── */
+    .bar-wrap { display: flex; align-items: center; gap: 10px; }
+    .bar-track {
+      flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%; border-radius: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width .4s ease;
+    }
+    .bar-val { font-family: var(--mono); font-size: 13px; color: var(--muted); min-width: 36px; }
+
+    /* ── TASK BREAKDOWN ───────────────────────────────────────── */
+    .task-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px,1fr)); gap: 20px; }
+    .task-card-title {
+      font-size: 12px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .1em; color: var(--accent); margin-bottom: 14px;
+    }
+    .task-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .task-model { font-size: 13px; color: var(--text); min-width: 120px; white-space: nowrap;
+                  overflow: hidden; text-overflow: ellipsis; }
+
+    /* ── DIFF SECTION ─────────────────────────────────────────── */
+    .diff-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+    .filter-btn {
+      padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 500;
+      border: 1px solid var(--border); background: var(--card); color: var(--muted);
+      cursor: pointer; transition: all .15s;
+    }
+    .filter-btn:hover, .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    .diff-card { margin-bottom: 24px; }
+    .diff-header {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 8px; margin-bottom: 14px;
+    }
+    .diff-prompt-id { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+    .diff-task-badge {
+      font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+      padding: 2px 8px; border-radius: 4px;
+      background: rgba(167,139,250,.12); color: var(--accent2);
+    }
+    .diff-prompt-text {
+      font-size: 14px; color: var(--text); margin-bottom: 14px;
+      padding: 12px 14px; background: rgba(255,255,255,.03); border-radius: 8px;
+      border-left: 3px solid var(--accent);
+    }
+    .diff-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 700px) { .diff-columns { grid-template-columns: 1fr; } }
+    .diff-col-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .diff-model-name { font-size: 12px; font-weight: 600; color: var(--text); }
+    .diff-output {
+      font-size: 13px; line-height: 1.7; color: #c8d0e0;
+      white-space: pre-wrap; word-break: break-word;
+      max-height: 340px; overflow-y: auto;
+      padding: 12px 14px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    }
+    .diff-output::-webkit-scrollbar { width: 5px; }
+    .diff-output::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .winner-tag { font-size: 11px; color: var(--green); font-weight: 600; letter-spacing: .04em; }
+
+    /* ── PROMPT DETAIL SECTION ────────────────────────────────── */
+    .prompt-accordion { margin-bottom: 10px; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .prompt-accordion summary {
+      list-style: none; padding: 14px 18px; cursor: pointer;
+      display: flex; align-items: center; gap: 12px; user-select: none;
+      background: var(--card); transition: background .15s;
+    }
+    .prompt-accordion summary:hover { background: rgba(255,255,255,.04); }
+    .prompt-accordion[open] summary { border-bottom: 1px solid var(--border); }
+    .prompt-accordion-body { padding: 16px 18px; background: var(--surface); }
+    .reasoning-text { font-size: 13px; color: var(--muted); font-style: italic; line-height: 1.6; }
+
+    /* ── FOOTER ───────────────────────────────────────────────── */
+    footer { padding: 28px 0; text-align: center; font-size: 12px; color: var(--muted); }
+    footer a { color: var(--accent); text-decoration: none; }
+
+    /* ── UTILS ────────────────────────────────────────────────── */
+    .mono { font-family: var(--mono); }
+    .hidden { display: none !important; }
+    code { font-family: var(--mono); font-size: .9em; background: rgba(255,255,255,.06);
+           padding: 1px 5px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════ HEADER ════════════════════════════ -->
+<header>
+  <div class="container">
+    <div class="header-inner">
+      <div>
+        <div class="logo">⚗ LLM Eval Harness</div>
+        <h1>{{ result.run_name }}</h1>
+        <p class="meta">
+          {{ result.timestamp.strftime('%Y-%m-%d %H:%M UTC') }} &nbsp;·&nbsp;
+          {{ result.prompts | length }} prompts &nbsp;·&nbsp;
+          {{ model_names | length }} models &nbsp;·&nbsp;
+          judge: <code>{{ result.config.judge.model }}</code>
+        </p>
+      </div>
+      {% if summary.best_model %}
+      <div>
+        <div class="stat-label">Top model</div>
+        <div class="badge">🏆 {{ summary.best_model }}</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════ NAV ═══════════════════════════════ -->
+<nav>
+  <div class="container">
+    <div class="nav-links">
+      <a href="#overview" class="active">Overview</a>
+      <a href="#leaderboard">Leaderboard</a>
+      <a href="#task-breakdown">Tasks</a>
+      <a href="#diffs">Side-by-Side</a>
+      <a href="#detail">Detail</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════ OVERVIEW ══════════════════════════ -->
+<section id="overview">
+  <div class="container">
+    <div class="section-title">Overview</div>
+    <div class="section-sub">High-level statistics across all models and prompts.</div>
+
+    <div class="summary-grid">
+      <div class="card stat-card">
+        <div class="stat-label">Models evaluated</div>
+        <div class="stat-value">{{ model_names | length }}</div>
+        <div class="stat-sub">{{ model_names | join(', ') }}</div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-label">Prompts</div>
+        <div class="stat-value">{{ result.prompts | length }}</div>
+        <div class="stat-sub">{{ task_types | join(' · ') }}</div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-label">Judge model</div>
+        <div class="stat-value" style="font-size:1.2rem;margin-top:4px">{{ result.config.judge.model }}</div>
+        <div class="stat-sub">scores 0 – 10</div>
+      </div>
+      {% if summary.best_model %}
+      <div class="card stat-card">
+        <div class="stat-label">Best avg score</div>
+        <div class="stat-value">{{ summary.models[summary.best_model].avg_score }}</div>
+        <div class="stat-sub">{{ summary.best_model }}</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ LEADERBOARD ═══════════════════════ -->
+<section id="leaderboard">
+  <div class="container">
+    <div class="section-title">Leaderboard</div>
+    <div class="section-sub">Models ranked by average judge score (0–10).</div>
+
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Model</th>
+              <th>Avg Score</th>
+              <th>Score</th>
+              <th>Std Dev</th>
+              <th>Avg Latency</th>
+              <th>Errors</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for model in ranked_models %}
+            {% set stats = summary.models[model] %}
+            {% set rank = loop.index %}
+            <tr>
+              <td>
+                <span class="rank {% if rank == 1 %}gold{% elif rank == 2 %}silver{% elif rank == 3 %}bronze{% endif %}">
+                  {{ rank }}
+                </span>
+              </td>
+              <td><span class="model-name">{{ model }}</span></td>
+              <td>
+                {% if stats.avg_score is not none %}
+                <span class="score-pill {% if stats.avg_score >= 7 %}score-high{% elif stats.avg_score >= 4 %}score-mid{% else %}score-low{% endif %}">
+                  {{ stats.avg_score }}
+                </span>
+                {% else %}
+                <span class="score-pill score-low">N/A</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="bar-wrap">
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: {{ ((stats.avg_score or 0) / 10 * 100)|round|int }}%"></div>
+                  </div>
+                  <div class="bar-val">{{ stats.avg_score or '—' }}</div>
+                </div>
+              </td>
+              <td class="mono" style="color:var(--muted)">± {{ stats.std_score }}</td>
+              <td class="mono" style="color:var(--muted)">{{ stats.avg_latency_ms }} ms</td>
+              <td>
+                {% if stats.errors > 0 %}
+                <span class="score-pill score-low">{{ stats.errors }}</span>
+                {% else %}
+                <span style="color:var(--green)">✓ 0</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ TASK BREAKDOWN ════════════════════ -->
+<section id="task-breakdown">
+  <div class="container">
+    <div class="section-title">Task Breakdown</div>
+    <div class="section-sub">Average judge scores split by eval task type.</div>
+
+    <div class="task-grid">
+      {% for task, model_scores in summary.task_breakdown.items() %}
+      <div class="card">
+        <div class="task-card-title">{{ task | replace('_', ' ') }}</div>
+        {% for model, score in model_scores | dictsort(by='value', reverse=True) %}
+        <div class="task-row">
+          <span class="task-model" title="{{ model }}">{{ model }}</span>
+          <div class="bar-track">
+            <div class="bar-fill" style="width: {{ (score / 10 * 100)|round|int }}%"></div>
+          </div>
+          <span class="bar-val">{{ score }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ DIFF SECTION ══════════════════════ -->
+<section id="diffs">
+  <div class="container">
+    <div class="section-title">Side-by-Side Comparisons</div>
+    <div class="section-sub">Model outputs placed next to each other for qualitative review.</div>
+
+    <!-- Pair filter buttons -->
+    {% set pairs = [] %}
+    {% for d in result.diffs %}
+      {% set pair = d.model_a ~ ' vs ' ~ d.model_b %}
+      {% if pair not in pairs %}{% set _ = pairs.append(pair) %}{% endif %}
+    {% endfor %}
+    <div class="diff-filters" id="pair-filters">
+      <button class="filter-btn active" data-pair="all" onclick="filterDiffs('all', this)">All pairs</button>
+      {% for pair in pairs %}
+      <button class="filter-btn" data-pair="{{ pair }}" onclick="filterDiffs('{{ pair }}', this)">{{ pair }}</button>
+      {% endfor %}
+    </div>
+
+    {% for diff in result.diffs %}
+    {% set pair = diff.model_a ~ ' vs ' ~ diff.model_b %}
+    <div class="card diff-card" data-pair="{{ pair }}">
+      <div class="diff-header">
+        <span class="diff-prompt-id">prompt: {{ diff.prompt_id }}</span>
+        <span class="diff-task-badge">
+          {{ (prompt_task_map[diff.prompt_id] | default('unknown')) | replace('_', ' ') }}
+        </span>
+      </div>
+      <div class="diff-prompt-text">{{ diff.prompt_text }}</div>
+      <div class="diff-columns">
+        <div>
+          <div class="diff-col-header">
+            <span class="diff-model-name">{{ diff.model_a }}</span>
+            {% if diff.score_a is not none %}
+            <span class="score-pill {% if diff.score_a >= 7 %}score-high{% elif diff.score_a >= 4 %}score-mid{% else %}score-low{% endif %}">
+              {{ diff.score_a }}
+              {% if diff.score_b is not none and diff.score_a > diff.score_b %}
+              &nbsp;<span class="winner-tag">▲ winner</span>
+              {% endif %}
+            </span>
+            {% endif %}
+          </div>
+          <div class="diff-output">{{ diff.output_a }}</div>
+        </div>
+        <div>
+          <div class="diff-col-header">
+            <span class="diff-model-name">{{ diff.model_b }}</span>
+            {% if diff.score_b is not none %}
+            <span class="score-pill {% if diff.score_b >= 7 %}score-high{% elif diff.score_b >= 4 %}score-mid{% else %}score-low{% endif %}">
+              {{ diff.score_b }}
+              {% if diff.score_a is not none and diff.score_b > diff.score_a %}
+              &nbsp;<span class="winner-tag">▲ winner</span>
+              {% endif %}
+            </span>
+            {% endif %}
+          </div>
+          <div class="diff-output">{{ diff.output_b }}</div>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <p style="color:var(--muted)">No diffs available (need ≥ 2 models).</p>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- ═══════════════════════════ DETAIL ════════════════════════════ -->
+<section id="detail">
+  <div class="container">
+    <div class="section-title">Judge Reasoning</div>
+    <div class="section-sub">Expand each prompt to see the judge's scoring rationale.</div>
+
+    {% for prompt in result.prompts %}
+    <details class="prompt-accordion">
+      <summary>
+        <span class="diff-prompt-id">{{ prompt.id }}</span>
+        <span class="diff-task-badge" style="font-size:10px">{{ prompt.task_type.value | replace('_',' ') }}</span>
+        <span style="flex:1;font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+          {{ prompt.user[:120] }}{% if prompt.user | length > 120 %}…{% endif %}
+        </span>
+      </summary>
+      <div class="prompt-accordion-body">
+        {% if prompt.system %}
+        <p style="font-size:12px;color:var(--muted);margin-bottom:8px"><strong>System:</strong> {{ prompt.system }}</p>
+        {% endif %}
+        {% for score in result.scores if score.prompt_id == prompt.id %}
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span class="diff-model-name">{{ score.model_name }}</span>
+            <span class="score-pill {% if score.score >= 7 %}score-high{% elif score.score >= 4 %}score-mid{% else %}score-low{% endif %}">
+              {{ score.score }}/10
+            </span>
+          </div>
+          <p class="reasoning-text">{{ score.reasoning }}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </details>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- ═══════════════════════════ FOOTER ════════════════════════════ -->
+<footer>
+  <div class="container">
+    Generated by <a href="https://github.com/your-org/llm-eval-harness">llm-eval-harness</a>
+    &nbsp;·&nbsp; {{ result.timestamp.strftime('%Y-%m-%d') }}
+  </div>
+</footer>
+
+<script>
+  // ── Sticky nav active state ────────────────────────────────────
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-links a');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const link = document.querySelector(`.nav-links a[href="#${e.target.id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-40% 0px -55% 0px' });
+  sections.forEach(s => observer.observe(s));
+
+  // ── Diff pair filter ───────────────────────────────────────────
+  function filterDiffs(pair, btn) {
+    document.querySelectorAll('#pair-filters .filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.diff-card').forEach(card => {
+      card.classList.toggle('hidden', pair !== 'all' && card.dataset.pair !== pair);
+    });
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sample_eval — LLM Eval Report</title>
+  <style>
+    /* ── TOKENS ───────────────────────────────────────────────── */
+    :root {
+      --bg:       #0d0f14;
+      --surface:  #151820;
+      --card:     #1c2030;
+      --border:   #2a2f42;
+      --accent:   #4f8ef7;
+      --accent2:  #a78bfa;
+      --green:    #34d399;
+      --amber:    #fbbf24;
+      --red:      #f87171;
+      --text:     #e2e8f0;
+      --muted:    #64748b;
+      --mono:     'JetBrains Mono', 'Fira Code', monospace;
+      --sans:     'DM Sans', system-ui, sans-serif;
+      --display:  'Space Grotesk', var(--sans);
+      --radius:   10px;
+      --shadow:   0 4px 24px rgba(0,0,0,.45);
+    }
+
+    /* ── RESET ────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 15px;
+      line-height: 1.65;
+      min-height: 100vh;
+    }
+
+    /* ── FONTS (self-contained via Google Fonts CDN) ──────────── */
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    /* ── LAYOUT ───────────────────────────────────────────────── */
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+    /* ── HEADER ───────────────────────────────────────────────── */
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 32px 0 28px;
+      background: linear-gradient(180deg, #111420 0%, var(--bg) 100%);
+    }
+    .header-inner {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .logo { font-family: var(--display); font-size: 11px; font-weight: 700;
+            letter-spacing: .14em; text-transform: uppercase; color: var(--accent);
+            margin-bottom: 6px; }
+    h1 { font-family: var(--display); font-size: 2rem; font-weight: 700;
+         line-height: 1.15; color: #fff; }
+    .meta { font-size: 13px; color: var(--muted); margin-top: 6px; }
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 600; letter-spacing: .04em;
+      text-transform: uppercase; background: rgba(79,142,247,.15);
+      color: var(--accent); border: 1px solid rgba(79,142,247,.3);
+    }
+
+    /* ── NAV ──────────────────────────────────────────────────── */
+    nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .nav-links { display: flex; gap: 0; overflow-x: auto; }
+    .nav-links a {
+      display: block; padding: 14px 20px; font-size: 13px; font-weight: 500;
+      color: var(--muted); text-decoration: none; white-space: nowrap;
+      border-bottom: 2px solid transparent; transition: all .2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* ── SECTIONS ─────────────────────────────────────────────── */
+    section { padding: 48px 0; border-bottom: 1px solid var(--border); }
+    section:last-child { border: none; }
+    .section-title {
+      font-family: var(--display); font-size: 1.25rem; font-weight: 700;
+      color: #fff; margin-bottom: 6px;
+    }
+    .section-sub { color: var(--muted); font-size: 13px; margin-bottom: 28px; }
+
+    /* ── CARDS ────────────────────────────────────────────────── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      box-shadow: var(--shadow);
+    }
+
+    /* ── SUMMARY GRID ─────────────────────────────────────────── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+    .stat-card { position: relative; overflow: hidden; }
+    .stat-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+    }
+    .stat-label { font-size: 11px; font-weight: 600; text-transform: uppercase;
+                  letter-spacing: .1em; color: var(--muted); margin-bottom: 8px; }
+    .stat-value { font-family: var(--display); font-size: 2rem; font-weight: 700; color: #fff; }
+    .stat-sub   { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    /* ── LEADERBOARD TABLE ────────────────────────────────────── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th {
+      text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .08em; color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+    td { padding: 12px 14px; border-bottom: 1px solid rgba(42,47,66,.6); vertical-align: top; }
+    tr:last-child td { border: none; }
+    tr:hover td { background: rgba(255,255,255,.025); }
+    .rank { font-family: var(--display); font-weight: 700; font-size: 18px; color: var(--muted); }
+    .rank.gold   { color: #fbbf24; }
+    .rank.silver { color: #94a3b8; }
+    .rank.bronze { color: #c08040; }
+    .model-name { font-weight: 600; color: #fff; }
+    .score-pill {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-family: var(--mono); font-size: 13px; font-weight: 600;
+    }
+    .score-high { background: rgba(52,211,153,.15); color: var(--green); }
+    .score-mid  { background: rgba(251,191,36,.15);  color: var(--amber); }
+    .score-low  { background: rgba(248,113,113,.15); color: var(--red); }
+
+    /* ── SCORE BAR ────────────────────────────────────────────── */
+    .bar-wrap { display: flex; align-items: center; gap: 10px; }
+    .bar-track {
+      flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%; border-radius: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width .4s ease;
+    }
+    .bar-val { font-family: var(--mono); font-size: 13px; color: var(--muted); min-width: 36px; }
+
+    /* ── TASK BREAKDOWN ───────────────────────────────────────── */
+    .task-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px,1fr)); gap: 20px; }
+    .task-card-title {
+      font-size: 12px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .1em; color: var(--accent); margin-bottom: 14px;
+    }
+    .task-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .task-model { font-size: 13px; color: var(--text); min-width: 120px; white-space: nowrap;
+                  overflow: hidden; text-overflow: ellipsis; }
+
+    /* ── DIFF SECTION ─────────────────────────────────────────── */
+    .diff-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+    .filter-btn {
+      padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 500;
+      border: 1px solid var(--border); background: var(--card); color: var(--muted);
+      cursor: pointer; transition: all .15s;
+    }
+    .filter-btn:hover, .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    .diff-card { margin-bottom: 24px; }
+    .diff-header {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 8px; margin-bottom: 14px;
+    }
+    .diff-prompt-id { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+    .diff-task-badge {
+      font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+      padding: 2px 8px; border-radius: 4px;
+      background: rgba(167,139,250,.12); color: var(--accent2);
+    }
+    .diff-prompt-text {
+      font-size: 14px; color: var(--text); margin-bottom: 14px;
+      padding: 12px 14px; background: rgba(255,255,255,.03); border-radius: 8px;
+      border-left: 3px solid var(--accent);
+    }
+    .diff-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 700px) { .diff-columns { grid-template-columns: 1fr; } }
+    .diff-col-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .diff-model-name { font-size: 12px; font-weight: 600; color: var(--text); }
+    .diff-output {
+      font-size: 13px; line-height: 1.7; color: #c8d0e0;
+      white-space: pre-wrap; word-break: break-word;
+      max-height: 340px; overflow-y: auto;
+      padding: 12px 14px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    }
+    .diff-output::-webkit-scrollbar { width: 5px; }
+    .diff-output::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .winner-tag { font-size: 11px; color: var(--green); font-weight: 600; letter-spacing: .04em; }
+
+    /* ── PROMPT DETAIL SECTION ────────────────────────────────── */
+    .prompt-accordion { margin-bottom: 10px; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .prompt-accordion summary {
+      list-style: none; padding: 14px 18px; cursor: pointer;
+      display: flex; align-items: center; gap: 12px; user-select: none;
+      background: var(--card); transition: background .15s;
+    }
+    .prompt-accordion summary:hover { background: rgba(255,255,255,.04); }
+    .prompt-accordion[open] summary { border-bottom: 1px solid var(--border); }
+    .prompt-accordion-body { padding: 16px 18px; background: var(--surface); }
+    .reasoning-text { font-size: 13px; color: var(--muted); font-style: italic; line-height: 1.6; }
+
+    /* ── FOOTER ───────────────────────────────────────────────── */
+    footer { padding: 28px 0; text-align: center; font-size: 12px; color: var(--muted); }
+    footer a { color: var(--accent); text-decoration: none; }
+
+    /* ── UTILS ────────────────────────────────────────────────── */
+    .mono { font-family: var(--mono); }
+    .hidden { display: none !important; }
+    code { font-family: var(--mono); font-size: .9em; background: rgba(255,255,255,.06);
+           padding: 1px 5px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════ HEADER ════════════════════════════ -->
+<header>
+  <div class="container">
+    <div class="header-inner">
+      <div>
+        <div class="logo">⚗ LLM Eval Harness</div>
+        <h1>sample_eval</h1>
+        <p class="meta">
+          2026-05-08 08:42 UTC &nbsp;·&nbsp;
+          10 prompts &nbsp;·&nbsp;
+          2 models &nbsp;·&nbsp;
+          judge: <code>llama3:8b</code>
+        </p>
+      </div>
+      
+      <div>
+        <div class="stat-label">Top model</div>
+        <div class="badge">🏆 LLaMA-3 8B</div>
+      </div>
+      
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════ NAV ═══════════════════════════════ -->
+<nav>
+  <div class="container">
+    <div class="nav-links">
+      <a href="#overview" class="active">Overview</a>
+      <a href="#leaderboard">Leaderboard</a>
+      <a href="#task-breakdown">Tasks</a>
+      <a href="#diffs">Side-by-Side</a>
+      <a href="#detail">Detail</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════ OVERVIEW ══════════════════════════ -->
+<section id="overview">
+  <div class="container">
+    <div class="section-title">Overview</div>
+    <div class="section-sub">High-level statistics across all models and prompts.</div>
+
+    <div class="summary-grid">
+      <div class="card stat-card">
+        <div class="stat-label">Models evaluated</div>
+        <div class="stat-value">2</div>
+        <div class="stat-sub">LLaMA-3 8B, Mistral 7B</div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-label">Prompts</div>
+        <div class="stat-value">10</div>
+        <div class="stat-sub">instruction_following · text_quality</div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-label">Judge model</div>
+        <div class="stat-value" style="font-size:1.2rem;margin-top:4px">llama3:8b</div>
+        <div class="stat-sub">scores 0 – 10</div>
+      </div>
+      
+      <div class="card stat-card">
+        <div class="stat-label">Best avg score</div>
+        <div class="stat-value">8.95</div>
+        <div class="stat-sub">LLaMA-3 8B</div>
+      </div>
+      
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ LEADERBOARD ═══════════════════════ -->
+<section id="leaderboard">
+  <div class="container">
+    <div class="section-title">Leaderboard</div>
+    <div class="section-sub">Models ranked by average judge score (0–10).</div>
+
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Model</th>
+              <th>Avg Score</th>
+              <th>Score</th>
+              <th>Std Dev</th>
+              <th>Avg Latency</th>
+              <th>Errors</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+            
+            
+            <tr>
+              <td>
+                <span class="rank gold">
+                  1
+                </span>
+              </td>
+              <td><span class="model-name">LLaMA-3 8B</span></td>
+              <td>
+                
+                <span class="score-pill score-high">
+                  8.95
+                </span>
+                
+              </td>
+              <td>
+                <div class="bar-wrap">
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 89%"></div>
+                  </div>
+                  <div class="bar-val">8.95</div>
+                </div>
+              </td>
+              <td class="mono" style="color:var(--muted)">± 0.49</td>
+              <td class="mono" style="color:var(--muted)">85618.8 ms</td>
+              <td>
+                
+                <span style="color:var(--green)">✓ 0</span>
+                
+              </td>
+            </tr>
+            
+            
+            
+            <tr>
+              <td>
+                <span class="rank silver">
+                  2
+                </span>
+              </td>
+              <td><span class="model-name">Mistral 7B</span></td>
+              <td>
+                
+                <span class="score-pill score-high">
+                  8.95
+                </span>
+                
+              </td>
+              <td>
+                <div class="bar-wrap">
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: 89%"></div>
+                  </div>
+                  <div class="bar-val">8.95</div>
+                </div>
+              </td>
+              <td class="mono" style="color:var(--muted)">± 0.43</td>
+              <td class="mono" style="color:var(--muted)">73198.0 ms</td>
+              <td>
+                
+                <span style="color:var(--green)">✓ 0</span>
+                
+              </td>
+            </tr>
+            
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ TASK BREAKDOWN ════════════════════ -->
+<section id="task-breakdown">
+  <div class="container">
+    <div class="section-title">Task Breakdown</div>
+    <div class="section-sub">Average judge scores split by eval task type.</div>
+
+    <div class="task-grid">
+      
+      <div class="card">
+        <div class="task-card-title">text quality</div>
+        
+        <div class="task-row">
+          <span class="task-model" title="LLaMA-3 8B">LLaMA-3 8B</span>
+          <div class="bar-track">
+            <div class="bar-fill" style="width: 92%"></div>
+          </div>
+          <span class="bar-val">9.24</span>
+        </div>
+        
+        <div class="task-row">
+          <span class="task-model" title="Mistral 7B">Mistral 7B</span>
+          <div class="bar-track">
+            <div class="bar-fill" style="width: 89%"></div>
+          </div>
+          <span class="bar-val">8.94</span>
+        </div>
+        
+      </div>
+      
+      <div class="card">
+        <div class="task-card-title">instruction following</div>
+        
+        <div class="task-row">
+          <span class="task-model" title="Mistral 7B">Mistral 7B</span>
+          <div class="bar-track">
+            <div class="bar-fill" style="width: 90%"></div>
+          </div>
+          <span class="bar-val">8.97</span>
+        </div>
+        
+        <div class="task-row">
+          <span class="task-model" title="LLaMA-3 8B">LLaMA-3 8B</span>
+          <div class="bar-track">
+            <div class="bar-fill" style="width: 87%"></div>
+          </div>
+          <span class="bar-val">8.67</span>
+        </div>
+        
+      </div>
+      
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ DIFF SECTION ══════════════════════ -->
+<section id="diffs">
+  <div class="container">
+    <div class="section-title">Side-by-Side Comparisons</div>
+    <div class="section-sub">Model outputs placed next to each other for qualitative review.</div>
+
+    <!-- Pair filter buttons -->
+    
+    
+      
+      
+    
+      
+      
+    
+      
+      
+    
+      
+      
+    
+      
+      
+    
+      
+      
+    
+      
+      
+    
+      
+      
+    
+      
+      
+    
+      
+      
+    
+    <div class="diff-filters" id="pair-filters">
+      <button class="filter-btn active" data-pair="all" onclick="filterDiffs('all', this)">All pairs</button>
+      
+      <button class="filter-btn" data-pair="LLaMA-3 8B vs Mistral 7B" onclick="filterDiffs('LLaMA-3 8B vs Mistral 7B', this)">LLaMA-3 8B vs Mistral 7B</button>
+      
+    </div>
+
+    
+    
+    <div class="card diff-card" data-pair="LLaMA-3 8B vs Mistral 7B">
+      <div class="diff-header">
+        <span class="diff-prompt-id">prompt: tq_01</span>
+        <span class="diff-task-badge">
+          text quality
+        </span>
+      </div>
+      <div class="diff-prompt-text">Write a short paragraph describing the sensation of walking through a dense forest at dawn.</div>
+      <div class="diff-columns">
+        <div>
+          <div class="diff-col-header">
+            <span class="diff-model-name">LLaMA-3 8B</span>
+            
+            <span class="score-pill score-high">
+              9.2
+              
+            </span>
+            
+          </div>
+          <div class="diff-output">As you step into the dense forest at dawn, the air envelops you in a sense of quiet reverence. The soft earth gives way beneath your feet as you make your way along the winding trail, the only sound being the gentle crunch of leaves and twigs breaking beneath your weight. The darkness slowly yields to the soft, golden light of sunrise, casting dappled shadows across the forest floor. The scent of damp earth and decaying leaves fills your nostrils, rich and loamy, while the sweet fragrance of blooming wildflowers wafts up to greet you. As you walk, the sounds of the forest begin to awaken - the chirping of birds, the rustling of small creatures in their hiding places - and you feel as though you are walking into a world that is still waking from its slumber, full of mystery and possibility.</div>
+        </div>
+        <div>
+          <div class="diff-col-header">
+            <span class="diff-model-name">Mistral 7B</span>
+            
+            <span class="score-pill score-high">
+              9.5
+              
+              &nbsp;<span class="winner-tag">▲ winner</span>
+              
+            </span>
+            
+          </div>
+          <div class="diff-output"> Walking through a dense forest at dawn is an experience that stirs the senses and invigorates the soul. The air is cool, crisp, and filled with the earthy scent of decaying leaves, dew-kissed moss, and the faint aroma of blooming flowers hidden among the trees. Sunlight filters through the dense canopy above, casting dappled patterns on the forest floor as it gradually creeps down to chase away the shadows. The symphony of morning birdsong begins to fill the air, a harmonious melody composed of various melodies woven together in a complex tapestry of sound. Each step reveals new sights and scents, from the delicate trilliums peeking through the underbrush to the towering oaks and pines reaching towards the heavens. Every element combines to create a profound sense of serenity, rejuvenation, and connection with nature's raw beauty and energy.</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="card diff-card" data-pair="LLaMA-3 8B vs Mistral 7B">
+      <div class="diff-header">
+        <span class="diff-prompt-id">prompt: tq_02</span>
+        <span class="diff-task-badge">
+          text quality
+        </span>
+      </div>
+      <div class="diff-prompt-text">Explain the concept of entropy in thermodynamics using an everyday analogy.</div>
+      <div class="diff-columns">
+        <div>
+          <div class="diff-col-header">
+            <span class="diff-model-name">LLaMA-3 8B</span>
+            
+            <span class="score-pill score-high">
+              9.5
+              
+              &nbsp;<span class="winner-tag">▲ winner</span>
+              
+            </span>
+            
+          </div>
+          <div class="diff-output">Entropy! The second law of thermodynamics' best friend. Here's an analogy to help you understand it:
+
+**The Messy Room**
+
+Imagine your room is a perfect, tidy space with everything in its place. Your clothes are hung up neatly, books are on the shelf, and your desk is organized. This represents a state of **low entropy**, where all the energy (or matter) in the room is organized and structured.
+
+Now, imagine that you have a party, and friends start arriving. They bring their own stuff, like bags, jackets, and snacks. As more people come in, the room starts to get messy. Clothes are scattered around, books are knocked off the shelf, and your desk becomes a cluttered mess. The space is now filled with disorganized energy.
+
+This represents **high entropy**, where the energy (or matter) has become less organized, more dispersed, and harder to manipulate. It's like the room has "mixed itself up"!
+
+Here's the key point: **Entropy always increases over time**. In our analogy:
+
+1. The tidy room (low entropy) exists initially.
+2. As people arrive and chaos ensues, the room becomes messier (high entropy).
+3. If someone tries to clean the room, they'll struggle to restore it to its original state (because entropy has increased).
+
+This mirrors the fundamental principle of thermodynamics: in a closed system, entropy tends to increase over time. In other words, energy becomes less organized and more dispersed as it interacts with its surroundings.
+
+**Real-life implications**
+
+Understanding entropy helps us appreciate why:
+
+1. Your room will always get messier unless you clean it regularly.
+2. A once-new car will eventually show signs of wear and tear.
+3. Energy resources (like heat or electricity) become less efficient over time.
+
+By grasping the concept of entropy, we can better manage our resources, optimize systems, and appreciate the second law's influence on everything from refrigeration to rocket propulsion!
+
+How was that? Did I help clarify the concept of entropy for you?</div>
+        </div>
+        <div>
+          <div class="diff-col-header">
+            <span class="diff-model-name">Mistral 7B</span>
+            
+            <span class="score-pill score-high">
+              8.5
+              
+            </span>
+            
+          </div>
+          <div class="diff-output"> In thermodynamics, entropy is a measure of disorder or randomness within a system. It's a fundamental concept that helps us understand how energy transformations affect the organization and availability of energy.
+
+An everyday analogy for understanding entropy could be to compare it with the state of a child's room. When the room is tidy, with everything in its place (low entropy), we have more control over the items and can easily find what we need. However, when the room is messy or disorganized (high entropy), finding specific objects becomes difficult because there is no clear order or arrangement (similar to a system with high entropy).
+
+In this analogy, energy transformations in thermodynamics can be seen as processes that either increase the organization of the system (decrease entropy) or create disorder (increase entropy). For example, when you clean your room and organize items (like putting clothes in the closet), entropy decreases because the system becomes more structured. On the other hand, if you leave your room messy for an extended period, entropy increases due to the accumulation of disorder.
+
+In the realm of energy transformations, it's important to note that naturally occurring processes tend towards a state of higher entropy. For instance, when you burn wood in a fireplace, the initial organized structure of the wood (low entropy) is transformed into heat and gases (high entropy). This increase in entropy is often accompanied by the release of energy as heat, which we can use for various purposes.
+
+In summary, just like how a child's room becomes more disorganized over time, thermodynamic systems tend to move towards greater disorder or randomness, and this increase in disorder (entropy) is related to the availability and transformation of energy within that system.</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="card diff-card" data-pair="LLaMA-3 8B vs Mistral 7B">
+      <div class="diff-header">
+        <span class="diff-prompt-id">prompt: tq_03</span>
+        <span class="diff-task-badge">
+          text quality
+        </span>
+      </div>
+      <div class="diff-prompt-text">Write a two-sentence abstract for a fictional paper about the social habits of deep-sea fish.</div>
+      <div class="diff-columns">
+        <div>
+          <div class="diff-col-header">
+            <span class="diff-model-name">LLaMA-3 8B</span>
+            
+            <span class="score-pill score-high">
+              9.5
+              
+              &nbsp;<span class="winner-tag">▲ winner</span>
+              
+            </span>
+            
+          </div>
+          <div class="diff-output">Here is a two-sentence abstract for a fictional paper:
+
+Our study, conducted in the Mariana Trench, reveals that certain species of deep-sea fish exhibit complex social behaviors, including cooperative hunting and intricate mating rituals, which are facilitated by their unique bioluminescent communication systems. These findings have significant implications for our understanding of the evolution of sociality in animals and highlight the importance of conserving these extraordinary ecosystems.</div>
+        </div>
+        <div>
+          <div class="diff-col-header">
+            <span class="diff-model-name">Mistral 7B</span>
+            
+            <span class="score-pill score-high">
+              9.0
+              
+            </span>
+            
+          </div>
+          <div class="diff-output"> Title: "Exploring the Societal Structure and Interaction Patterns Among Deep-Sea Fish Populations: Insights from the Abyss"
+
+Abstract: This study delves into the complex and unique social behaviors exhibited by deep-sea fish species, providing a comprehensive analysis of their societal structure, communication methods, and cooperation mechanisms in the extreme environments of the abyssal zone. The findings underscore the remarkable adaptability and sociability of these creatures, challenging conventional perceptions about life at the ocean's depths.</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="card diff-card" data-pair="LLaMA-3 8B vs Mistral 7B">
+      <div class="diff-header">
+        <span class="diff-prompt-id">prompt: tq_04</span>
+        <span class="diff-task-badge">
+          text quality
+        </span>
+      </div>
+      <div class="diff-prompt-text">Describe the economic consequences of a sudden 50% drop in global shipping capacity.</div>
+      <div class="diff-columns">
+        <div>
+          <div class="diff-col-header">
+            <span class="diff-model-name">LLaMA-3 8B</span>
+            
+            <span class="score-pill score-high">
+              9.5
+              
+              &nbsp;<span class="winner-tag">▲ winner</span>
+              
+            </span>
+            
+          </div>
+          <div class="diff-output">A sudden 50% drop in global shipping capacity would have far-reaching and devastating economic consequences. Here are some potential impacts:
+
+1. **Supply Chain Disruptions**: With reduced shipping capacity, goods would be delayed or not delivered at all, causing stockouts, inventory pileups, and disruptions to just-in-time production systems. This would lead to:
+	* Production halts: Manufacturers might halt production due to lack of essential components or raw materials.
+	* Price increases: Firms might raise prices to reflect the increased costs of shipping and delayed delivery times.
+2. **Increased Costs**: With reduced capacity, shipping companies would increase their rates to compensate for higher operating costs, such as fuel, labor, and equipment maintenance. This would lead to:
+	* Higher production costs: Manufacturers would face increased costs due to higher transportation costs.
+	* Inflation: The increased costs would contribute to inflationary pressures, affecting the overall cost of living.
+3. **Global Trade Decline**: A reduction in shipping capacity would make international trade more challenging and expensive, leading to:
+	* Reduced exports: Countries that rely heavily on exports might experience a decline in their foreign sales.
+	* Decreased economic growth: The reduced trade volume would contribute to slower economic growth or even recession.
+4. **Job Losses**: With supply chain disruptions and increased costs, businesses might need to reduce production or shut down entirely, leading to:
+	* Job losses: Employment figures would decline as companies adjust to the new market conditions.
+5. **Inflationary Pressures**: The sudden increase in shipping costs would put upward pressure on prices across various industries, including food, energy, and consumer goods, leading to:
+	* Higher living costs: Consumers would face increased expenses for daily necessities, impacting their purchasing power.
+6. **Regional Disparities**: The economic impacts would vary by region, depending on the level of trade dependence and the availability of alternative shipping routes or modes (e.g., airfreight). Some regions might be more severely affected than others.
+7. **Commodity Price Volatility**: The reduced global shipping capacity could lead to price volatility in commodities like oil, grains, and metals, as supply chain disruptions affect the flow of goods.
+8. **Regulatory Challenges**: Governments would face pressure to address the crisis, potentially leading to:
+	* Regulatory changes: Governments might introduce new regulations or relax existing ones to facilitate trade and mitigate the economic impacts.
+9. **Long-Term Consequences**: The sudden reduction in shipping capacity could have long-term effects on global supply chains, trade patterns, and economic growth, as companies adapt to the new market conditions and consider alternative strategies for production and distribution.
+10. **Economic Recovery Uncertainty**: The recovery from such a shock would be uncertain and potentially slow, as businesses and consumers adjust to the new market realities.
+
+In summary, a sudden 50% drop in global shipping capacity would have far-reaching economic consequences, including supply chain disruptions, increased costs, reduced trade, job losses, inflationary pressures, regional disparities, commodity price volatility, regulatory challenges, long-term impacts, and uncertainty around the recovery.</div>
+        </div>
+        <div>
+          <div class="diff-col-header">
+            <span class="diff-model-name">Mistral 7B</span>
+            
+            <span class="score-pill score-high">
+              9.2
+              
+            </span>
+            
+          </div>
+          <div class="diff-output"> A sudden 50% drop in global shipping capacity would have profound and far-reaching economic consequences:
+
+1. Supply Chain Disruptions: The immediate impact would be widespread supply chain disruptions. Many industries rely heavily on international trade for raw materials, components, and finished goods. A decrease in shipping capacity could lead to shortages, delays, or even halts in production for these industries.
+
+2. Inflation: With reduced availability of goods due to supply chain disruptions, demand for the remaining goods may increase. This increased demand coupled with decreased supply can lead to inflation. Prices for a wide range of goods and services could rise as companies pass on their increased costs to consumers.
+
+3. Economic Growth: The reduction in global shipping capacity could also impact economic growth. If businesses cannot get the raw materials, components, or finished products they need to operate, production may slow or halt, leading to job losses. This can lead to a decrease in consumer spending and further exacerbate economic downturns.
+
+4. Trade Imbalances: Changes in shipping capacity can affect trade balances. If certain regions are disproportionately affected by the drop in shipping capacity, they may see an increase in imports relative to exports, leading to a worsening of their trade deficits. Conversely, countries that are less affected might see improved trade surpluses.
+
+5. Increased Transportation Costs: With fewer vessels available for shipping, rates are likely to rise. This could make international trade more expensive, further increasing the costs for businesses and consumers.
+
+6. Geopolitical Tensions: A sudden drop in global shipping capacity could also lead to geopolitical tensions, especially if certain countries or regions are disproportionately affected. Countries dependent on imports might see their economies struggling more than others, leading to potential trade disputes or diplomatic conflicts.
+
+To mitigate these consequences, governments and businesses may need to implement strategies such as investing in new shipping infrastructure, finding alternative transportation methods, negotiating trade agreements to balance trade imbalances, and providing support for affected industries and workers during the transition.</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="card diff-card" data-pair="LLaMA-3 8B vs Mistral 7B">
+      <div class="diff-header">
+        <span class="diff-prompt-id">prompt: tq_05</span>
+        <span class="diff-task-badge">
+          text quality
+        </span>
+      </div>
+      <div class="diff-prompt-text">Summarise the main arguments for and against universal basic income in under 150 words.</div>
+      <div class="diff-columns">
+        <div>
+          <div class="diff-col-header">
+            <span class="diff-model-name">LLaMA-3 8B</span>
+            
+            <span class="score-pill score-high">
+              8.5
+              
+            </span>
+            
+          </div>
+          <div class="diff-output">**Arguments For Universal Basic Income (UBI):**
+
+1. **Poverty Reduction**: UBI provides a safety net, ensuring all citizens have access to basic needs like food, shelter, and healthcare.
+2. **Job Freedom**: UBI gives people the financial security to pursue fulfilling work or education without worrying about poverty.
+3. **Simplification of Welfare Systems**: UBI consolidates existing welfare programs into one simple, unconditional payment.
+4. **Economic Stimulus**: UBI puts money in citizens' pockets, stimulating local economies and increasing consumer spending.
+
+**Arguments Against Universal Basic Income:**
+
+1. **Cost**: Implementing and maintaining a UBI system would be expensive, potentially straining government budgets.
+2. **Inefficiency**: Some argue that UBI could displace existing social welfare programs, leading to inefficiencies and waste.
+3. **Work Incentives**: Critics worry that UBI might reduce the incentive to work or seek employment, as people might rely solely on the basic income.
+4. **Targeted Aid vs. Blanket Payments**: Some argue that targeted aid programs are more effective in addressing specific social issues than a universal, unconditional payment.</div>
+        </div>
+        <div>
+          <div class="diff-col-header">
+            <span class="diff-model-name">Mistral 7B</span>
+            
+            <span class="score-pill score-high">
+              8.5
+              
+            </span>
+            
+          </div>
+          <div class="diff-output"> For Universal Basic Income (UBI):
+
+1. Reduces Poverty: UBI provides a minimum income, ensuring everyone has access to food, shelter, and healthcare, reducing poverty levels.
+2. Stimulates Economy: Direct cash transfers into consumers' hands boosts local spending, stimulating economic growth.
+3. Encourages Entrepreneurship: By providing financial security, UBI encourages individuals to take risks and pursue entrepreneurial ventures.
+4. Simplifies Welfare Systems: Replacing complex welfare systems with a simple universal income could save administrative costs.
+
+Against Universal Basic Income:
+
+1. High Costs: Implementing UBI on a large scale would require significant government funding, potentially leading to increased taxes or debt.
+2. Disincentivizes Work: Critics argue that UBI may disincentivize work by providing individuals with an income regardless of employment status.
+3. Inflation: Increased consumer spending due to UBI could lead to inflation, eroding the purchasing power of the income over time.
+4. Inefficiency: Some argue that UBI is inefficient as it does not target specific groups most in need, such as the unemployed or low-income workers. Instead, resources could be directed more effectively through existing social welfare programs.</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="card diff-card" data-pair="LLaMA-3 8B vs Mistral 7B">
+      <div class="diff-header">
+        <span class="diff-prompt-id">prompt: if_01</span>
+        <span class="diff-task-badge">
+          instruction following
+        </span>
+      </div>
+      <div class="diff-prompt-text">What are the key differences between supervised, unsupervised, and reinforcement learning?</div>
+      <div class="diff-columns">
+        <div>
+          <div class="diff-col-header">
+            <span class="diff-model-name">LLaMA-3 8B</span>
+            
+            <span class="score-pill score-high">
+              8.5
+              
+            </span>
+            
+          </div>
+          <div class="diff-output">Here are the key differences:
+
+• **Supervised Learning**: Learns from labeled data to make predictions on new, unseen data.
+• **Unsupervised Learning**: Finds patterns or structures in unlabeled data without a specific goal.
+• **Reinforcement Learning**: Learns by interacting with an environment and receiving rewards or penalties.</div>
+        </div>
+        <div>
+          <div class="diff-col-header">
+            <span class="diff-model-name">Mistral 7B</span>
+            
+            <span class="score-pill score-high">
+              9.5
+              
+              &nbsp;<span class="winner-tag">▲ winner</span>
+              
+            </span>
+            
+          </div>
+          <div class="diff-output"> - Supervised Learning: Uses labeled data for both input and output variables to train the model. The goal is to learn a mapping function from inputs to outputs. Examples include classification (categorizing) and regression problems.
+
+- Unsupervised Learning: Deals with unlabeled data, where there are only inputs without any corresponding outputs. The objective is to find patterns or structure in the data by grouping similar instances together or finding relationships between variables. Clustering and dimensionality reduction techniques fall under this category.
+
+- Reinforcement Learning (RL): In RL, an agent learns through interaction with its environment, receiving rewards or punishments for taking certain actions. The goal is to find the optimal policy that maximizes long-term cumulative reward. Examples include navigation tasks, game playing, and robot control.
+
+- Key difference between Supervised and Unsupervised Learning: In supervised learning, the data comes with predefined labels (outputs), while in unsupervised learning, there are no predefined labels, and the goal is to discover hidden patterns or structures in the data.
+
+- Key difference between Reinforcement Learning and other two methods: Unlike supervised and unsupervised learning, reinforcement learning focuses on learning by trial and error through interactions with an environment, where rewards guide the agent towards optimal policies. In contrast, supervised and unsupervised learning learn from labeled or unlabeled data without direct interaction with the environment.</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="card diff-card" data-pair="LLaMA-3 8B vs Mistral 7B">
+      <div class="diff-header">
+        <span class="diff-prompt-id">prompt: if_02</span>
+        <span class="diff-task-badge">
+          instruction following
+        </span>
+      </div>
+      <div class="diff-prompt-text">Return a JSON object with three fields: capital, population (as a number), and continent for France.</div>
+      <div class="diff-columns">
+        <div>
+          <div class="diff-col-header">
+            <span class="diff-model-name">LLaMA-3 8B</span>
+            
+            <span class="score-pill score-high">
+              9.33
+              
+            </span>
+            
+          </div>
+          <div class="diff-output">{
+"capital": "Paris",
+"population": 67000000,
+"continent": "Europe"
+}</div>
+        </div>
+        <div>
+          <div class="diff-col-header">
+            <span class="diff-model-name">Mistral 7B</span>
+            
+            <span class="score-pill score-high">
+              9.33
+              
+            </span>
+            
+          </div>
+          <div class="diff-output"> {
+  "capital": "Paris",
+  "population": 67060000,
+  "continent": "Europe"
+}</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="card diff-card" data-pair="LLaMA-3 8B vs Mistral 7B">
+      <div class="diff-header">
+        <span class="diff-prompt-id">prompt: if_03</span>
+        <span class="diff-task-badge">
+          instruction following
+        </span>
+      </div>
+      <div class="diff-prompt-text">List exactly 4 programming languages that are primarily used for data science. Number them 1–4.</div>
+      <div class="diff-columns">
+        <div>
+          <div class="diff-col-header">
+            <span class="diff-model-name">LLaMA-3 8B</span>
+            
+            <span class="score-pill score-high">
+              8.5
+              
+            </span>
+            
+          </div>
+          <div class="diff-output">Here are 4 programming languages that are primarily used for data science:
+
+1. **Python**: Python is one of the most popular programming languages in data science, widely used for tasks such as data cleaning, visualization, and machine learning.
+2. **R**: R is a specialized programming language for statistical computing and graphics. It's commonly used for data analysis, modeling, and visualization in fields like medicine, finance, and social sciences.
+3. **Julia**: Julia is a new language gaining popularity in the data science community due to its high performance, ease of use, and compatibility with Python libraries like NumPy and Pandas.
+4. **SQL**: SQL (Structured Query Language) is used for managing and analyzing structured data stored in relational databases. It's essential for data wrangling, querying, and visualization in data science applications.
+
+These languages are often used together to form a powerful data science workflow!</div>
+        </div>
+        <div>
+          <div class="diff-col-header">
+            <span class="diff-model-name">Mistral 7B</span>
+            
+            <span class="score-pill score-high">
+              8.5
+              
+            </span>
+            
+          </div>
+          <div class="diff-output"> 1. Python: Python is widely recognized as the most popular language in data science due to its simplicity, extensive libraries like NumPy, Pandas, Scikit-learn, and Matplotlib that facilitate data analysis, machine learning, and visualization tasks.
+
+2. R: R is another commonly used programming language for statistical computing and graphics. It has a rich set of packages specifically designed for data analysis, such as ggplot2, dplyr, and caret, making it an excellent choice for statisticians.
+
+3. Julia: Julia is a high-level, high-performance programming language that was designed to address the computational needs of data science, machine learning, and quantitative finance. It boasts superior performance compared to Python and R, making it a promising alternative for large-scale computations.
+
+4. SQL: Although not typically considered a data science language, SQL (Structured Query Language) is essential for working with structured data in relational databases like MySQL, PostgreSQL, or Microsoft SQL Server. SQL helps data scientists efficiently query, manipulate, and analyze large datasets stored in these databases.</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="card diff-card" data-pair="LLaMA-3 8B vs Mistral 7B">
+      <div class="diff-header">
+        <span class="diff-prompt-id">prompt: if_04</span>
+        <span class="diff-task-badge">
+          instruction following
+        </span>
+      </div>
+      <div class="diff-prompt-text">Write a one-sentence apology to a client for a delayed delivery.</div>
+      <div class="diff-columns">
+        <div>
+          <div class="diff-col-header">
+            <span class="diff-model-name">LLaMA-3 8B</span>
+            
+            <span class="score-pill score-high">
+              8.5
+              
+            </span>
+            
+          </div>
+          <div class="diff-output">I am deeply sorry to inform you that the scheduled delivery of your order has been delayed and I want to assure you that we are working diligently to rectify the situation as expeditiously as possible.</div>
+        </div>
+        <div>
+          <div class="diff-col-header">
+            <span class="diff-model-name">Mistral 7B</span>
+            
+            <span class="score-pill score-high">
+              9.0
+              
+              &nbsp;<span class="winner-tag">▲ winner</span>
+              
+            </span>
+            
+          </div>
+          <div class="diff-output"> We deeply regret the delay in the delivery of your order and sincerely apologize for any inconvenience caused. We are making every effort to expedite its shipping and appreciate your understanding in this matter.
+
+In a more succinct format:
+
+Apologies are expressed for the late arrival of your order, causing potential inconvenience. Efforts are being made to accelerate shipment and we thank you for your patience.</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="card diff-card" data-pair="LLaMA-3 8B vs Mistral 7B">
+      <div class="diff-header">
+        <span class="diff-prompt-id">prompt: if_05</span>
+        <span class="diff-task-badge">
+          instruction following
+        </span>
+      </div>
+      <div class="diff-prompt-text">Translate the following sentence into Spanish, French, and German. Present each translation on a separate line, prefixed with the language name and a colon. Sentence: "The quick brown fox jumps over the lazy dog."
+</div>
+      <div class="diff-columns">
+        <div>
+          <div class="diff-col-header">
+            <span class="diff-model-name">LLaMA-3 8B</span>
+            
+            <span class="score-pill score-high">
+              8.5
+              
+            </span>
+            
+          </div>
+          <div class="diff-output">Here are the translations:
+
+English:
+The quick brown fox jumps over the lazy dog.
+
+Spanish: El zorro rápido marrón salta sobre el perro perezoso.
+
+French: Le renard rapide brun saute sur le chien paresseux.
+
+German: Der schnelle braune Fuchs springt über den lahmen Hund.</div>
+        </div>
+        <div>
+          <div class="diff-col-header">
+            <span class="diff-model-name">Mistral 7B</span>
+            
+            <span class="score-pill score-high">
+              8.5
+              
+            </span>
+            
+          </div>
+          <div class="diff-output"> English: The quick brown fox jumps over the lazy dog.
+Spanish: El zorro rápido marrón saltó sobre el perro perezoso.
+French: Le renard brun rapide saute sur le chien paresseux.
+German: Der schnelle braune Fuchs springt über den faulen Hund.</div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</section>
+
+<!-- ═══════════════════════════ DETAIL ════════════════════════════ -->
+<section id="detail">
+  <div class="container">
+    <div class="section-title">Judge Reasoning</div>
+    <div class="section-sub">Expand each prompt to see the judge's scoring rationale.</div>
+
+    
+    <details class="prompt-accordion">
+      <summary>
+        <span class="diff-prompt-id">tq_01</span>
+        <span class="diff-task-badge" style="font-size:10px">text quality</span>
+        <span style="flex:1;font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+          Write a short paragraph describing the sensation of walking through a dense forest at dawn.
+        </span>
+      </summary>
+      <div class="prompt-accordion-body">
+        
+        
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span class="diff-model-name">LLaMA-3 8B</span>
+            <span class="score-pill score-high">
+              9.2/10
+            </span>
+          </div>
+          <p class="reasoning-text">The model's response effectively captures the sensation of walking through a dense forest at dawn, with vivid descriptions of the sights, sounds, and smells. The writing is clear, coherent, and well-structured, with a good balance between sensory details and poetic language. The only deduction is for a slight tendency towards overly lyrical phrasing, which while pleasant to read, may not be entirely necessary to convey the intended atmosphere. Overall, the response demonstrates strong relevance to the prompt, excellent quality of writing, and complete instruction following.</p>
+        </div>
+        
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span class="diff-model-name">Mistral 7B</span>
+            <span class="score-pill score-high">
+              9.5/10
+            </span>
+          </div>
+          <p class="reasoning-text">The model response is highly relevant to the prompt, providing a vivid and immersive description of walking through a dense forest at dawn. The writing quality is excellent, with clear and coherent sentences that effectively convey the sensory experience. The use of descriptive language, such as 'earthy scent', 'dew-kissed moss', and 'harmonious melody' adds depth and richness to the passage. The only deduction is for a slight deviation from the prompt's focus on the sensation itself, as the response also describes the natural beauty and energy of the forest. Overall, the model response effectively captures the essence of the prompt and provides a compelling description.</p>
+        </div>
+        
+      </div>
+    </details>
+    
+    <details class="prompt-accordion">
+      <summary>
+        <span class="diff-prompt-id">tq_02</span>
+        <span class="diff-task-badge" style="font-size:10px">text quality</span>
+        <span style="flex:1;font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+          Explain the concept of entropy in thermodynamics using an everyday analogy.
+        </span>
+      </summary>
+      <div class="prompt-accordion-body">
+        
+        
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span class="diff-model-name">LLaMA-3 8B</span>
+            <span class="score-pill score-high">
+              9.5/10
+            </span>
+          </div>
+          <p class="reasoning-text">The model response is excellent in terms of relevance, quality, and instruction following. The analogy used to explain entropy is clear, concise, and well-structured, making it easy to understand even for non-experts. The response directly addresses the prompt and provides a comprehensive explanation of the concept of entropy, including its implications in real-life scenarios. The only minor issue is that the response could be slightly more concise, but overall, it is a great effort.</p>
+        </div>
+        
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span class="diff-model-name">Mistral 7B</span>
+            <span class="score-pill score-high">
+              8.5/10
+            </span>
+          </div>
+          <p class="reasoning-text">The model response effectively explains the concept of entropy in thermodynamics using a relatable everyday analogy. The writing is clear and coherent, with a logical structure that flows well from one idea to another. The analogy of the child's room is well-chosen and helps to illustrate the concept of entropy in a way that is easy to understand. The model also does a good job of applying this analogy to energy transformations in thermodynamics, providing concrete examples to support its claims. One area for improvement could be to provide more explicit connections between the analogy and the underlying thermodynamic principles, but overall the response is well-organized and effectively communicates the concept of entropy.</p>
+        </div>
+        
+      </div>
+    </details>
+    
+    <details class="prompt-accordion">
+      <summary>
+        <span class="diff-prompt-id">tq_03</span>
+        <span class="diff-task-badge" style="font-size:10px">text quality</span>
+        <span style="flex:1;font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+          Write a two-sentence abstract for a fictional paper about the social habits of deep-sea fish.
+        </span>
+      </summary>
+      <div class="prompt-accordion-body">
+        
+        
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span class="diff-model-name">LLaMA-3 8B</span>
+            <span class="score-pill score-high">
+              9.5/10
+            </span>
+          </div>
+          <p class="reasoning-text">The model's response is highly relevant to the prompt, providing a clear and concise abstract that directly addresses the topic of deep-sea fish social habits. The writing is also of high quality, with complex ideas presented in a clear and coherent manner. The only deduction is for not explicitly mentioning the paper's title or authors, which would have added more context to the abstract. Overall, the response effectively summarizes the main findings of the fictional paper and provides a compelling reason to read on.</p>
+        </div>
+        
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span class="diff-model-name">Mistral 7B</span>
+            <span class="score-pill score-high">
+              9.0/10
+            </span>
+          </div>
+          <p class="reasoning-text">The model response is highly relevant to the prompt, providing a clear abstract for a fictional paper on the social habits of deep-sea fish. The writing quality is excellent, with a well-structured and coherent summary that effectively conveys the main findings of the study. The response also accurately follows the instruction, providing a two-sentence abstract as requested. The only minor deduction is for not explicitly stating the research questions or methodology in the abstract, but this is not a requirement specified in the prompt.</p>
+        </div>
+        
+      </div>
+    </details>
+    
+    <details class="prompt-accordion">
+      <summary>
+        <span class="diff-prompt-id">tq_04</span>
+        <span class="diff-task-badge" style="font-size:10px">text quality</span>
+        <span style="flex:1;font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+          Describe the economic consequences of a sudden 50% drop in global shipping capacity.
+        </span>
+      </summary>
+      <div class="prompt-accordion-body">
+        
+        
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span class="diff-model-name">LLaMA-3 8B</span>
+            <span class="score-pill score-high">
+              9.5/10
+            </span>
+          </div>
+          <p class="reasoning-text">The model response is well-structured and provides a comprehensive overview of the economic consequences of a sudden 50% drop in global shipping capacity. The response directly addresses the prompt and covers various aspects of the impact, including supply chain disruptions, increased costs, reduced trade, job losses, inflationary pressures, regional disparities, commodity price volatility, regulatory challenges, long-term impacts, and uncertainty around the recovery. The writing is clear, coherent, and well-organized, making it easy to follow and understand. The only minor deduction is for not providing a more nuanced discussion of the potential benefits or opportunities that might arise from such a shock.</p>
+        </div>
+        
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span class="diff-model-name">Mistral 7B</span>
+            <span class="score-pill score-high">
+              9.2/10
+            </span>
+          </div>
+          <p class="reasoning-text">The model response is well-structured and provides a comprehensive overview of the economic consequences of a sudden 50% drop in global shipping capacity. The response directly addresses the prompt and covers various aspects of the impact, including supply chain disruptions, inflation, economic growth, trade imbalances, increased transportation costs, and geopolitical tensions. The writing is clear and coherent, with each point logically flowing from the previous one. The only minor deduction is for a lack of specific data or statistics to support some of the claims made in the response.</p>
+        </div>
+        
+      </div>
+    </details>
+    
+    <details class="prompt-accordion">
+      <summary>
+        <span class="diff-prompt-id">tq_05</span>
+        <span class="diff-task-badge" style="font-size:10px">text quality</span>
+        <span style="flex:1;font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+          Summarise the main arguments for and against universal basic income in under 150 words.
+        </span>
+      </summary>
+      <div class="prompt-accordion-body">
+        
+        
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span class="diff-model-name">LLaMA-3 8B</span>
+            <span class="score-pill score-high">
+              8.5/10
+            </span>
+          </div>
+          <p class="reasoning-text">The model response effectively summarizes both sides of the debate on Universal Basic Income (UBI), providing clear and concise arguments for and against its implementation. The response is well-structured, with a clear introduction to the topic followed by separate sections for the pros and cons. The language used is straightforward and easy to understand, making it accessible to a general audience. While there is no explicit reference answer provided, the model's summary appears comprehensive and accurate in its representation of the main arguments. The only deduction from a perfect score is due to the lack of nuance or critical evaluation of these arguments, which would have added depth and complexity to the response.</p>
+        </div>
+        
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span class="diff-model-name">Mistral 7B</span>
+            <span class="score-pill score-high">
+              8.5/10
+            </span>
+          </div>
+          <p class="reasoning-text">The model response provides a clear and concise summary of the main arguments for and against Universal Basic Income (UBI). The points presented on both sides are relevant and well-structured, making it easy to follow and understand. The only minor issue is that some of the points could be further elaborated upon or supported with additional evidence. Overall, the response demonstrates a good understanding of the topic and effectively addresses the prompt.</p>
+        </div>
+        
+      </div>
+    </details>
+    
+    <details class="prompt-accordion">
+      <summary>
+        <span class="diff-prompt-id">if_01</span>
+        <span class="diff-task-badge" style="font-size:10px">instruction following</span>
+        <span style="flex:1;font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+          What are the key differences between supervised, unsupervised, and reinforcement learning?
+        </span>
+      </summary>
+      <div class="prompt-accordion-body">
+        
+        <p style="font-size:12px;color:var(--muted);margin-bottom:8px"><strong>System:</strong> You are a concise assistant. Answer in bullet points only. Use no more than 5 bullets.</p>
+        
+        
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span class="diff-model-name">LLaMA-3 8B</span>
+            <span class="score-pill score-high">
+              8.5/10
+            </span>
+          </div>
+          <p class="reasoning-text">The model's response is concise and accurately summarizes the key differences between supervised, unsupervised, and reinforcement learning. It meets all the instruction requirements, using only bullet points and staying within the 5-bullet limit. The language is clear and easy to understand, making it a strong response overall. However, it does not explicitly state that supervised learning requires explicit labels, which is mentioned in the reference answer. This omission prevents the score from being higher.</p>
+        </div>
+        
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span class="diff-model-name">Mistral 7B</span>
+            <span class="score-pill score-high">
+              9.5/10
+            </span>
+          </div>
+          <p class="reasoning-text">The model response is well-structured and easy to follow, providing clear explanations of each type of machine learning. The key differences between supervised, unsupervised, and reinforcement learning are accurately highlighted, with relevant examples given for each. The only minor issue is that the response could be more concise, as it exceeds the 5-bullet-point limit specified in the instruction.</p>
+        </div>
+        
+      </div>
+    </details>
+    
+    <details class="prompt-accordion">
+      <summary>
+        <span class="diff-prompt-id">if_02</span>
+        <span class="diff-task-badge" style="font-size:10px">instruction following</span>
+        <span style="flex:1;font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+          Return a JSON object with three fields: capital, population (as a number), and continent for France.
+        </span>
+      </summary>
+      <div class="prompt-accordion-body">
+        
+        <p style="font-size:12px;color:var(--muted);margin-bottom:8px"><strong>System:</strong> Respond only with a valid JSON object. Do not include any other text or markdown.</p>
+        
+        
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span class="diff-model-name">LLaMA-3 8B</span>
+            <span class="score-pill score-high">
+              9.33/10
+            </span>
+          </div>
+          <p class="reasoning-text">The model's response is very close to the reference answer, with only minor discrepancies in population (1 million off) and no issues with relevance or instruction following. The quality of writing is high, as it directly addresses all required fields and provides accurate information.</p>
+        </div>
+        
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span class="diff-model-name">Mistral 7B</span>
+            <span class="score-pill score-high">
+              9.33/10
+            </span>
+          </div>
+          <p class="reasoning-text">The model's response is very close to the reference answer in terms of relevance and quality. It correctly identifies France's capital as Paris and population as a number (although slightly off). The only minor issue is that it does not strictly follow the instruction to provide a valid JSON object with exactly three fields, as it includes the population value without quotes. However, this is a minor quibble, and overall, the response is excellent.</p>
+        </div>
+        
+      </div>
+    </details>
+    
+    <details class="prompt-accordion">
+      <summary>
+        <span class="diff-prompt-id">if_03</span>
+        <span class="diff-task-badge" style="font-size:10px">instruction following</span>
+        <span style="flex:1;font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+          List exactly 4 programming languages that are primarily used for data science. Number them 1–4.
+        </span>
+      </summary>
+      <div class="prompt-accordion-body">
+        
+        
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span class="diff-model-name">LLaMA-3 8B</span>
+            <span class="score-pill score-high">
+              8.5/10
+            </span>
+          </div>
+          <p class="reasoning-text">The model response is mostly accurate, correctly listing Python, R, Julia, and SQL as programming languages used for data science. The descriptions provided for each language are also generally good, although some minor issues exist. For example, the description of SQL is a bit too broad, as it's not just about managing and analyzing structured data, but also querying and manipulating data. Additionally, the response could be improved by providing more specific examples or applications of each language in data science. Overall, the model response demonstrates good understanding of the topic, but some minor errors and opportunities for improvement exist.</p>
+        </div>
+        
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span class="diff-model-name">Mistral 7B</span>
+            <span class="score-pill score-high">
+              8.5/10
+            </span>
+          </div>
+          <p class="reasoning-text">The model response accurately lists four programming languages that are primarily used for data science: Python, R, Julia, and SQL. The descriptions provided for each language are generally clear and concise, with some minor issues in terms of quality (e.g., the sentence structure is not always optimal). The response fully addresses the prompt and follows all explicit constraints. However, it does not provide a particularly unique or insightful perspective on the languages, which prevents it from scoring higher.</p>
+        </div>
+        
+      </div>
+    </details>
+    
+    <details class="prompt-accordion">
+      <summary>
+        <span class="diff-prompt-id">if_04</span>
+        <span class="diff-task-badge" style="font-size:10px">instruction following</span>
+        <span style="flex:1;font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+          Write a one-sentence apology to a client for a delayed delivery.
+        </span>
+      </summary>
+      <div class="prompt-accordion-body">
+        
+        <p style="font-size:12px;color:var(--muted);margin-bottom:8px"><strong>System:</strong> You are a formal business writer. Never use contractions or informal language.</p>
+        
+        
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span class="diff-model-name">LLaMA-3 8B</span>
+            <span class="score-pill score-high">
+              8.5/10
+            </span>
+          </div>
+          <p class="reasoning-text">The model's response is well-structured and clearly conveys a formal apology to the client. The language is professional and avoids contractions, adhering to the system instruction. While it could be slightly more concise, the response effectively addresses the client's concern about the delayed delivery. Relevance: 3, Quality: 4, Instruction following: 3.</p>
+        </div>
+        
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span class="diff-model-name">Mistral 7B</span>
+            <span class="score-pill score-high">
+              9.0/10
+            </span>
+          </div>
+          <p class="reasoning-text">The model response effectively addresses the prompt by providing a formal apology for the delayed delivery, taking responsibility for the inconvenience caused, and expressing appreciation for the client's understanding. The writing is clear, coherent, and well-structured, with no grammatical errors or informal language. The only deduction is for the slightly longer length of the first sentence compared to the reference answer, but overall, the response meets the requirements and demonstrates a good understanding of formal business writing.</p>
+        </div>
+        
+      </div>
+    </details>
+    
+    <details class="prompt-accordion">
+      <summary>
+        <span class="diff-prompt-id">if_05</span>
+        <span class="diff-task-badge" style="font-size:10px">instruction following</span>
+        <span style="flex:1;font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+          Translate the following sentence into Spanish, French, and German. Present each translation on a separate line, prefixed…
+        </span>
+      </summary>
+      <div class="prompt-accordion-body">
+        
+        
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span class="diff-model-name">LLaMA-3 8B</span>
+            <span class="score-pill score-high">
+              8.5/10
+            </span>
+          </div>
+          <p class="reasoning-text">The model's response is mostly accurate, with only minor errors in the Spanish and German translations. The Spanish translation incorrectly orders 'zorro' and 'marrón', while the German translation uses 'lahmen' instead of 'perezoso'. However, the French translation is correct. Overall, the model demonstrates a good understanding of the languages, but needs to improve its attention to detail.</p>
+        </div>
+        
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span class="diff-model-name">Mistral 7B</span>
+            <span class="score-pill score-high">
+              8.5/10
+            </span>
+          </div>
+          <p class="reasoning-text">The model's response is mostly accurate, with only minor errors in grammar and word order. The translations are generally correct, but lack the nuance and idiomatic expressions found in the reference answers. For example, 'saltó' instead of 'salta' in Spanish, and 'saute sur' instead of 'saute par-dessus' in French. However, the model's response is still a good effort, and demonstrates a basic understanding of the languages.</p>
+        </div>
+        
+      </div>
+    </details>
+    
+  </div>
+</section>
+
+<!-- ═══════════════════════════ FOOTER ════════════════════════════ -->
+<footer>
+  <div class="container">
+    Generated by <a href="https://github.com/your-org/llm-eval-harness">llm-eval-harness</a>
+    &nbsp;·&nbsp; 2026-05-08
+  </div>
+</footer>
+
+<script>
+  // ── Sticky nav active state ────────────────────────────────────
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-links a');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const link = document.querySelector(`.nav-links a[href="#${e.target.id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-40% 0px -55% 0px' });
+  sections.forEach(s => observer.observe(s));
+
+  // ── Diff pair filter ───────────────────────────────────────────
+  function filterDiffs(pair, btn) {
+    document.querySelectorAll('#pair-filters .filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.diff-card').forEach(card => {
+      card.classList.toggle('hidden', pair !== 'all' && card.dataset.pair !== pair);
+    });
+  }
+</script>
+</body>
+</html>
