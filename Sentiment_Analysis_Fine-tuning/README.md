@@ -1,14 +1,13 @@
-# 🎭 Sentiment Fine-Tuning — Laptop-Friendly Edition
+# Sentiment Analysis Fine-Tuning: Laptop-Friendly Edition
 
 Fine-tune **DistilBERT** on 3-class review sentiment using Hugging Face Transformers.
 Runs entirely on **CPU**, no GPU required. Full pipeline completes in ~30 minutes.
 
-**Domain:** Product/Service Review Sentiment (Positive / Negative / Neutral)
-**Dataset:** Amazon Polarity (HuggingFace) + Yelp 3-star neutral examples
-**Base Model:** `distilbert-base-uncased` (66 MB)
-**Method:** Full fine-tuning via HF `Trainer`
-**Training Size:** ~900 labeled examples
-
+- **Domain:** Product/Service Review Sentiment (Positive / Negative / Neutral)
+- **Dataset:** Amazon Polarity (HuggingFace) + Yelp 3-star neutral examples
+- **Base Model:** `distilbert-base-uncased` (66 MB)
+- **Method:** Full fine-tuning via HF `Trainer`
+- **Training Size:** ~900 labeled examples
 ---
 
 ## Expected Results
@@ -24,19 +23,19 @@ Runs entirely on **CPU**, no GPU required. Full pipeline completes in ~30 minute
 
 ## Tech Stack
 
-| Layer | Tool | Version | Purpose |
-|-------|------|---------|---------|
-| **Model** | DistilBERT (`distilbert-base-uncased`) | — | 66M-param BERT variant, 40% smaller/60% faster than BERT-base |
-| **ML Framework** | PyTorch | 2.3+ | Tensor ops, autograd, model backend |
-| **NLP Library** | Hugging Face Transformers | 4.44+ | Model loading, tokenizer, `Trainer` training loop |
-| **Dataset Library** | Hugging Face Datasets | 2.21+ | Parquet loading, batched tokenization |
-| **Training** | HF `Trainer` + `TrainingArguments` | — | Training loop, checkpointing, early stopping |
-| **Metrics** | scikit-learn | 1.5+ | Accuracy, F1, confusion matrix, classification report |
-| **Data processing** | NumPy, Pandas | 1.26+ / 2.2+ | Array ops, dataframe inspection |
-| **Visualisation** | Matplotlib, Seaborn | 3.9+ / 0.13+ | Result plots, confusion matrix heatmaps |
-| **Config** | PyYAML | 6.0+ | Hyperparameter config files |
-| **Dataset source** | Amazon Polarity (HuggingFace) | — | Positive / negative reviews |
-| **Neutral source** | Heuristic scan of Amazon Polarity | — | Mixed-sentiment reviews re-labelled neutral |
+| Layer | Tool | Purpose |
+|-------|------|---------|
+| **Model** | DistilBERT (`distilbert-base-uncased`) | 66M-param BERT variant, 40% smaller/60% faster than BERT-base |
+| **ML Framework** | PyTorch | Tensor ops, autograd, model backend |
+| **NLP Library** | Hugging Face Transformers | Model loading, tokenizer, `Trainer` training loop |
+| **Dataset Library** | Hugging Face Datasets | Parquet loading, batched tokenization |
+| **Training** | HF `Trainer` + `TrainingArguments` | Training loop, checkpointing, early stopping |
+| **Metrics** | scikit-learn | Accuracy, F1, confusion matrix, classification report |
+| **Data processing** | NumPy, Pandas | Array ops, dataframe inspection |
+| **Visualisation** | Matplotlib, Seaborn | Result plots, confusion matrix heatmaps |
+| **Config** | PyYAML | Hyperparameter config files |
+| **Dataset source** | Amazon Polarity (HuggingFace) | Positive / negative reviews |
+| **Neutral source** | Heuristic scan of Amazon Polarity | Mixed-sentiment reviews re-labelled neutral |
 
 ### Why DistilBERT?
 
@@ -55,17 +54,16 @@ source venv/bin/activate      # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-No special tokens or model access required — DistilBERT is fully public.
+No special tokens or model access required, DistilBERT is fully public.
 
 ---
 
 ## Run the Full Pipeline
-
-# 0 Downloa data
+```bash
+# 0 Download data
 > from https://huggingface.co/datasets/fancyzhx/amazon_polarity/tree/main/amazon_polarity
 > and store it in `data/amazon_polarity` folder
 
-```bash
 # 1. Prepare data ()
 python data/prepare_dataset.py
 
