@@ -1,0 +1,15 @@
+# --- Core Logic & Orchestration ---
+langchain>=0.3.0
+langchain-community>=0.3.0
+langchain-core>=0.3.6
+
+# --- Local Model Providers ---
+langchain-ollama>=0.2.0
+langchain-chroma>=0.1.4
+
+# --- Performance & Re-ranking ---
+flashrank>=0.2.8
+
+# --- Utilities & Testing ---
+requests>=2.32.0
+pytest>=8.0.0
