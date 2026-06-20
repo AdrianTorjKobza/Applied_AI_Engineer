@@ -33,14 +33,15 @@ To achieve production-grade speed and stability, this system implements a **Mode
 * **Language:** Python 3.10+
 * **Core Libraries:** `pandas` (Data pipelines), `pydantic` (Schema validation), `requests` (API connections), `Pillow` (Image optimization).
 * **Local Inference Engine:** [Ollama](https://ollama.com/)
-* **AI Models:** * `qwen2.5vl:7b` (Visual inspection)
+* **AI Models:**
+  * `qwen2.5vl:7b` (Visual inspection)
   * `qwen2.5:7b` (Textual reasoning and synthesis)
 
 ## 🚀 Setup & Installation
 
 **1. Clone the repository and navigate to the code directory:**
 ```bash
-cd hackerrank-orchestrate-june26/code
+cd Multi-Modal_Evidence_Review_HackerRank_Orchestrate_Jun_2026
 ```
 
 **2. Initialize the Python Virtual Environment:**
