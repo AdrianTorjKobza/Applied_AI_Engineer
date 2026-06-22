@@ -18,8 +18,8 @@ The pipeline consists of three core components:
 ## Tech Stack
 
 * **Language:** Python 3.10+
-* **Framework:** [LangChain](https://python.langchain.com/) (`langchain`, `langchain-ollama`)
-* **Local LLM Engine:** [Ollama](https://ollama.com/)
+* **Framework:** LangChain, LangGraph
+* **Local LLM Engine:** Ollama
 * **Model:** Qwen 2.5 (7B parameters)
 * **Data Processing:** Pandas
 
