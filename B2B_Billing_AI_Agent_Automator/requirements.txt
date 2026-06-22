@@ -1,0 +1,13 @@
+# Data Processing
+pandas>=2.0.0
+
+# Core Agent Framework
+langchain>=0.2.0
+langchain-core>=0.2.0
+langchain-community>=0.2.0
+
+# Advanced Agent Routing & State Management
+langgraph>=0.1.0
+
+# Local LLM Integration
+langchain-ollama>=0.1.0
