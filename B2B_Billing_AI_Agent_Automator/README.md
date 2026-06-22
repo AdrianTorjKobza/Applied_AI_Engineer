@@ -1,4 +1,4 @@
-# Agentic AI Pipeline: Automated Invoice Processing
+# Agentic AI Pipeline: Automated B2B Invoice Processing
 
 This project implements a local Agentic AI pipeline designed to automate the processing of wholesale purchase orders. It reads natural language emails, extracts purchasing entities, and deterministically calculates the final invoice total using a modern ReAct (Reason and Act) loop via LangChain.
 
@@ -13,7 +13,7 @@ Large Language Models (LLMs) excel at natural language processing but struggle w
 The pipeline consists of three core components:
 1. **Deterministic Python Tools:** Three functions (`calculate_subtotal`, `apply_discount`, `calculate_final_total`) decorated as LangChain tools, equipped with explicit Pydantic type-hints and docstrings.
 2. **Local Inference Engine (Ollama):** We utilize `qwen2.5:7b` running locally. Qwen 2.5 is chosen for its exceptional native tool-calling capabilities and structured output adherence.
-3. **Agent Executor (LangChain):** A `create_tool_calling_agent` manages the execution state. It injects a system prompt containing defaults (0% discount, $0 shipping) and forces the LLM to interact with the tools to resolve the user input.
+3. **Agent Executor (LangChain):** A `agent_executor` manages the execution state. It injects a system prompt containing defaults (0% discount, $0 shipping) and forces the LLM to interact with the tools to resolve the user input.
 
 ## Tech Stack
 
@@ -48,7 +48,7 @@ pip install -r requirements.txt
 
 ## How to Run
 
-Ensure your input file (`test.csv`) is formatted correctly and located in the data directory. The script expects `order_id` and `email_text` columns.
+Ensure your input file (`test.csv`) is formatted correctly and located in the `data` directory. The script expects `order_id` and `email_text` columns.
 
 Run the pipeline:
 ```bash
