@@ -51,32 +51,38 @@ The system uses a state machine graph to process tickets asynchronously while pe
 - Observability (Optional): Langfuse
 
 ##  Installation & Prerequisites
-- 1. Local System Dependencies:
+1. Local System Dependencies:
 * Install Docker & Ollama.
-* Pull Llama 3 via Ollama CLI: ollama pull llama3:8b
-
-- 2. Database Setup (Docker):
+* Pull Llama 3 via Ollama CLI:
+```bash
+  ollama pull llama3:8b
+```
+2. Database Setup (Docker):
 * Spin up a persistent local PostgreSQL instance:
+```bash
 docker run --name pg-triage -e POSTGRES_USER=admin -e POSTGRES_PASSWORD=adminpassword -e POSTGRES_DB=triage_db -p 5432:5342 -d postgres:15
-
-- 3. Virtual Environment & Dependencies:
+```
+3. Virtual Environment & Dependencies:
 * Clone the repository, set up a virtual environment, and install dependencies:
+```bash
 python -m venv venv
 source venv/bin/activate  # On Windows use: venv\Scripts\activate
 pip install fastapi uvicorn langgraph psycopg_pool psycopg[binary] httpx python-dotenv tenacity langfuse
-
-- 4. Configuration File:
-Update the .env file with your Langfuse public/secret keys.
+```
+4. Configuration File:
+* Update the .env file with your Langfuse public/secret keys.
 
 ## Execution Steps
-- 1. Start the API Server:
+1. Start the API Server:
 * Launch the FastAPI development server using Uvicorn:
+```bash
 uvicorn api.main:app --reload --env-file .env
-
-- 2. Trigger the Triage Engine via Webhook:
+```
+2. Trigger the Triage Engine via Webhook:
 * Open Postman or run a curl command to send a POST request to http://127.0.0.1:8000/api/v1/tickets/webhook.
 * Headers:
 Content-Type: application/json
+```text
 Body (JSON):
 {
   "ticket_id": "9912",
@@ -85,11 +91,11 @@ Body (JSON):
   "subject": "Dispute on charging invoice",
   "description": "URGENT: There is a double billing charge dispute on my credit card."
 }
-
+```
 ## Expected Results & Terminal Output
 * Processing & Classification:
 The PowerShell/terminal window displays the incoming payload and routes it dynamically to the corresponding specialist node (e.g. Billing).
-
+```text
 📥 [WEBHOOK PAYLOAD RECEIVED FROM POSTMAN]
 Ticket ID       : 9912
 Source Platform : zendesk
@@ -101,10 +107,10 @@ Description     : URGENT: There is a double billing charge dispute on my credit 
 
 [AGENT] Analyzing ticket 9912 for classification...
 [CLASSIFICATION RESULT] Assigned Category: Billing
-
+```
 * Human-in-the-Loop Interruption:
 Due to keywords indicating urgency/disputes, the evaluator lowers the confidence score and triggers an interactive terminal break.
-
+```text
 [EVALUATOR] Grading draft response quality and setting confidence threshold...
 [EVALUATOR RESULT] Low confidence trigger detected. Pausing for Human Review.
 
@@ -113,6 +119,7 @@ AI Drafted Response:
 Here's a sample response: ...
 ------------------------------------------------------------
 Accept auto-send approval? Type 'y/approve' or 'n/reject':
+```
 
 ## Inspecting State History (DBeaver)
 - You can inspect immutable operational checkpoints directly using DBeaver Community Edition:
