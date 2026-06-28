@@ -1,0 +1,26 @@
+services:
+  postgres:
+    image: ankane/pgvector:latest
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminpassword
+      POSTGRES_DB: triage_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  langfuse-server:
+    image: langfuse/langfuse:latest
+    depends_on:
+      - postgres
+    environment:
+      - DATABASE_URL=postgresql://admin:adminpassword@postgres:5432/triage_db
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_SECRET=local_secret_key
+      - SALT=local_salt_key
+    ports:
+      - "3000:3000"
+
+volumes:
+  pg_data:

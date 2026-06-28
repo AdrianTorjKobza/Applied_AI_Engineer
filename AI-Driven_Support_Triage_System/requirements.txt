@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+httpx
+pydantic
+tenacity
+langgraph
+langgraph-checkpoint-postgres
+langchain-community
+langchain-postgres
+psycopg_pool
+psycopg[binary]
+langfuse
