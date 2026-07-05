@@ -1,0 +1,5 @@
+Timestamp,Endpoint,Latency_Sec,Tokens_Generated,HTTP_Status
+7/5/2026 12:32,/api/v1/hr-documents/analyze,24.0809,193,200
+7/5/2026 12:32,/api/v1/hr-documents/analyze,13.8786,224,200
+2026-07-05 12:39:45,/api/v1/hr-documents/analyze,19.2023,193,200
+2026-07-05 12:40:02,/api/v1/hr-documents/analyze,13.8778,224,200

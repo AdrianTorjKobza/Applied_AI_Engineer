@@ -1,0 +1,10 @@
+Q3 Performance Review
+Employee: Amanda Corvis
+Department: Backend Engineering
+Reviewer: Marcus Thorne (ID: 110-442)
+
+Summary of Q3:
+Amanda has been a vital asset this quarter. She successfully led the migration of our database from AWS to our on-premise servers ahead of schedule. However, multiple team members, specifically junior developer Kevin R. and QA lead Jessica V., have filed minor complaints regarding Amanda's communication style during code reviews, describing her feedback as overly harsh and discouraging. 
+
+Action Items: 
+Amanda is eligible for the standard 4% Q3 bonus. However, HR needs to schedule a mandatory 1-on-1 conflict resolution and leadership training session for Amanda before the end of November. Please ensure Kevin and Jessica's feedback remains anonymous during this training.

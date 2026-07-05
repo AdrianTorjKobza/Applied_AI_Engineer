@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  llm-engine:
+    image: ollama/ollama:latest
+    container_name: hr-llm-engine
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+
+  init-ollama:
+    image: curlimages/curl:latest
+    container_name: hr-llm-init
+    depends_on:
+      - llm-engine
+    command: >
+      sh -c "echo 'Waiting for Ollama...' && sleep 10 && 
+             curl -X POST http://llm-engine:11434/api/pull -d '{\"name\": \"phi3\"}'"
+
+  api-gateway:
+    build: .
+    container_name: hr-api-gateway
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # This overrides the localhost setting in your .env file
+      # forcing Docker to route traffic to the internal container network
+      - OLLAMA_URL=http://llm-engine:11434/api/generate
+    volumes:
+      - ./logs:/app/logs
+    depends_on:
+      - llm-engine
+
+volumes:
+  ollama_data:
