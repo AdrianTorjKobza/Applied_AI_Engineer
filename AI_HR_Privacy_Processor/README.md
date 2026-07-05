@@ -21,9 +21,6 @@ Because inference runs entirely on local infrastructure (CPU/GPU) via Ollama, **
 
 ## 🛠️ Tech Stack
 
-**Language & Core**
-* **Python (3.11+)**: The core programming language.
-
 **API & Backend Framework**
 * **FastAPI**: High-performance asynchronous web framework for building the API.
 * **Uvicorn**: Lightning-fast ASGI server to run the FastAPI application.
@@ -33,7 +30,7 @@ Because inference runs entirely on local infrastructure (CPU/GPU) via Ollama, **
 **AI & Machine Learning**
 * **Ollama**: Local AI engine that runs and serves the Large Language Models.
 * **LangChain**: AI orchestration framework used for prompt templating and zero-temperature LLM pipelining.
-* **Models**: Designed for local CPU efficiency (e.g., Microsoft `phi3` or Meta `llama3-8b`).
+* **Models**: Designed for local CPU efficiency (e.g. Microsoft `phi3` or Meta `llama3-8b`).
 
 **Infrastructure & DevOps**
 * **Docker & Docker Compose**: Containerization and multi-service network orchestration.
