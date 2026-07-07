@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-deployment
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      # CRITICAL NETWORK FIX: Maps host.docker.internal inside the K8s Pod network boundary
+      hostAliases:
+        - ip: "192.168.65.2" # The standard internal gateway IP for Docker Desktop on Windows
+          hostnames:
+            - "host.docker.internal"
+      containers:
+        - name: agent
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 8000
+          env:
+            - name: OLLAMA_BASE_URL
+              value: {{ .Values.env.ollamaBaseUrl }}
+            - name: LANGFUSE_HOST
+              value: {{ .Values.env.langfuseHost }}
+          envFrom:
+            - secretRef:
+                name: langfuse-secrets

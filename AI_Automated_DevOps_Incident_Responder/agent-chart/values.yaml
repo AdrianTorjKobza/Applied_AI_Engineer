@@ -1,0 +1,23 @@
+replicaCount: 1
+image:
+  repository: devops-agent
+  tag: "latest"      # Will act as our fallback value
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: "nginx"
+  hosts:
+    - host: devops-agent.local
+      paths:
+        - path: /
+          pathType: Prefix
+
+# Application config overrides
+env:
+  ollamaBaseUrl: "http://host.docker.internal:11434"
+  langfuseHost: "http://host.docker.internal:3000"

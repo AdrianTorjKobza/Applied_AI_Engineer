@@ -1,0 +1,6 @@
+[2026-07-06 11:50:02] INFO: Server starting...
+[2026-07-06 11:52:14] WARN: Connection pool utilization at 85% (425/500).
+[2026-07-06 11:54:01] WARN: Connection pool utilization at 95% (475/500).
+[2026-07-06 11:55:00] ERROR: FATAL: remaining connection slots are reserved for non-replication superuser connections
+[2026-07-06 11:55:05] ERROR: Connection pool exhausted. Rejecting incoming connections from API Gateway.
+[2026-07-06 11:56:10] WARN: Query latency exceeding 2000ms threshold.

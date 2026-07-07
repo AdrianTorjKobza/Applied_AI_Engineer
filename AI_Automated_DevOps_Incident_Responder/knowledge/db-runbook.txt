@@ -1,0 +1,18 @@
+RUNBOOK: Database Connection Pool Exhaustion
+TARGET: PostgreSQL Primary
+
+SYMPTOMS:
+
+504 Gateway Timeouts at the API Gateway.
+
+Database logs indicate "remaining connection slots are reserved" or "pool exhausted".
+
+Connection count reaches the max_connections limit (default 500).
+
+REMEDIATION STEPS:
+
+Immediate Mitigation: Scale up the API Gateway read replicas to offload read-only queries from the primary database. Use command: kubectl scale deployment/api-gateway --replicas=3
+
+Configuration Fix: Increase the database connection pool limit. Update the DB_POOL_SIZE environment variable on the PostgreSQL StatefulSet to 1000.
+
+Long-term: Implement connection pooling via PgBouncer to prevent direct connection exhaustion.
