@@ -1,12 +1,12 @@
-# 🤖 AI Automated DevOps Incident Responder
+# AI Automated DevOps Incident Responder
 
 An intelligent, locally-hosted AI agent built to ingest infrastructure alerts, diagnose root causes via Retrieval-Augmented Generation (RAG), and formulate precise remediation strategies. Designed to run completely offline within a Kubernetes cluster using local LLMs.
 
 ---
 
-## 📖 Overview & Use Case
+## Overview & Use Case
 
-**The Problem:** Modern DevOps teams are flooded with alerts from monitoring tools (Datadog, PagerDuty, Prometheus). Triage requires a human engineer to read the alert, search for logs, cross-reference internal documentation (runbooks), and formulate a fix—often at 3:00 AM.
+**The Problem:** Modern DevOps teams are flooded with alerts from monitoring tools (Datadog, PagerDuty, Prometheus). Triage requires a human engineer to read the alert, search for logs, cross-reference internal documentation (runbooks), and formulate a fix.
 
 **The Solution:** This project deploys an autonomous AI responder into the Kubernetes cluster. When an alert triggers a webhook:
 1. **Ingestion:** A FastAPI endpoint receives the incident payload.
@@ -18,9 +18,9 @@ An intelligent, locally-hosted AI agent built to ingest infrastructure alerts, d
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
-This application operates on a modern, containerized AI stack, utilizing a ReAct (Reasoning and Acting) agent loop:
+This application operates on a containerized AI stack, utilizing a ReAct (Reasoning and Acting) agent loop:
 
 1. **API Gateway:** `FastAPI` handles webhook ingestion and Pydantic schema validation.
 2. **Agent Router:** `LangGraph` orchestrates the cognitive loop, deciding when the LLM should think, when it should use a tool, and when it should output the final answer.
@@ -31,9 +31,8 @@ This application operates on a modern, containerized AI stack, utilizing a ReAct
 
 ---
 
-## ⚙️ Tech Stack
+## Tech Stack
 
-* **Language:** Python 3.11
 * **Framework:** FastAPI, Uvicorn
 * **AI & Orchestration:** LangChain, LangGraph, LangChain-Ollama
 * **Vector Store & RAG:** ChromaDB
@@ -43,7 +42,7 @@ This application operates on a modern, containerized AI stack, utilizing a ReAct
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```text
 AI_Automated_DevOps_Incident_Responder/
@@ -52,7 +51,6 @@ AI_Automated_DevOps_Incident_Responder/
 │   └── agent.py             # LangGraph compilation, ChromaDB logic, and LLM Tools
 ├── knowledge/               # (.txt) Engineering Runbooks for Vector Embeddings
 ├── logs/                    # (.txt) Mock service logs for agent ingestion
-├── k8s/                     # Kubernetes Deployment and Service Manifests
 ├── requirements.txt         # Python dependencies
 ├── Dockerfile               # Containerization instructions
 └── README.md                # Project documentation
@@ -60,7 +58,7 @@ AI_Automated_DevOps_Incident_Responder/
 
 ---
 
-## 🚀 Local Setup & Deployment
+## Local Setup & Deployment
 
 ### 1. Configure the Local LLM (Ollama)
 Because the application runs inside a Kubernetes pod, Ollama must be configured to accept external network traffic from the Docker bridge.
@@ -73,6 +71,7 @@ Trigger the local GitHub Actions pipeline to build the Docker image, push it to 
 ```bash
 act --container-options "-v ${PWD}/.kube-temp/config:/root/.kube-host/config"
 kubectl rollout restart deployment my-agent-deployment
+kubectl get pods -w
 ```
 
 ### 3. Open the Network Tunnel
@@ -83,7 +82,7 @@ kubectl port-forward deployment/my-agent-deployment 8000:8000
 
 ---
 
-## 🧪 Testing the Agent
+## Testing the Agent
 
 1. Navigate to the Swagger UI: `http://localhost:8000/docs`
 2. Locate the incident ingestion endpoint (e.g., `POST /incident`).
@@ -102,7 +101,7 @@ kubectl port-forward deployment/my-agent-deployment 8000:8000
 
 ---
 
-## 🔮 Future Enhancements
+## Future Enhancements
 
 * **Autonomous Execution:** Upgrade the agent from "Diagnostic" to "Remediation" by passing the Pod's internal `kubeconfig` to the Python app, allowing the LangGraph agent to autonomously execute `kubectl scale` commands.
 * **Slack Integration:** Add a LangChain tool to output the agent's findings directly into a designated `#incident-response` Slack channel.
