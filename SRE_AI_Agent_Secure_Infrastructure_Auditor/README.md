@@ -1,14 +1,14 @@
 # SRE AI Agent: Secure Infrastructure Auditor
 
-## 📖 Overview
+## Overview
 The **SRE AI Agent** is an autonomous, air-gapped Site Reliability Engineering assistant powered by local Large Language Models (LLMs). Designed to operate within secure Kubernetes environments, it actively analyzes infrastructure telemetry, diagnoses system anomalies (such as CrashLoopBackOff states or CPU starvation), and provides actionable remediation steps.
 
 This project emphasizes enterprise-grade security, utilizing an identity-first approach where the AI agent must authenticate via Keycloak and HashiCorp Vault before executing its diagnostic routines.
 
 ---
 
-## 🎯 Use Case
-Modern Kubernetes environments generate overwhelming amounts of telemetry data. When an incident occurs (e.g., a checkout service timing out), SREs must manually correlate metrics, logs, and cluster state to find the root cause. 
+## Use Case
+Modern Kubernetes environments generate overwhelming amounts of telemetry data. When an incident occurs (e.g. a checkout service timing out), SREs must manually correlate metrics, logs, and cluster state to find the root cause. 
 
 This AI Agent automates the "Level 1/Level 2" diagnostic triage:
 1. **Securely Authenticates:** Proves its identity to the cluster via OIDC/JWT.
@@ -18,7 +18,7 @@ This AI Agent automates the "Level 1/Level 2" diagnostic triage:
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 * **AI & Orchestration:** * [Ollama](https://ollama.com/) (Local Llama 3 Model)
   * [LangGraph](https://python.langchain.com/v0.1/docs/langgraph/) (State Machine & Agent Logic)
   * [LangChain](https://python.langchain.com/)
@@ -32,7 +32,7 @@ This AI Agent automates the "Level 1/Level 2" diagnostic triage:
 
 ---
 
-## 🏛️ High-Level Architecture (Hybrid Local Setup)
+## High-Level Architecture (Hybrid Local Setup)
 
 Due to hardware constraints typical of local Docker Desktop deployments, this architecture utilizes a **Hybrid Execution Model**. The heavy security infrastructure runs inside the Kubernetes cluster, while the Agent's AI logic and LLM run directly on the host machine to preserve RAM and prevent networking timeouts.
 
@@ -55,7 +55,7 @@ Building secure, enterprise infrastructure on a single local machine requires sp
 
 ---
 
-## 📂 File Structure
+## File Structure
 
 ```text
 SRE_AI_Agent_Secure_Infrastructure_Auditor/
@@ -68,7 +68,6 @@ SRE_AI_Agent_Secure_Infrastructure_Auditor/
 │   └── debug_auth.py     # Sandbox script to test Keycloak/Vault authentication isolation
 │
 ├── .env                  # (GitIgnored) Local host endpoints and secret Keycloak credentials
-├── .gitignore            # Prevents committing .env, tfstate, and venv files
 │
 ├── main.tf               # Terraform core providers and cluster bootstrapping
 ├── variables.tf          # Terraform variable definitions
@@ -76,32 +75,26 @@ SRE_AI_Agent_Secure_Infrastructure_Auditor/
 ├── security.tf           # Keycloak & Vault Kubernetes deployment manifests
 ├── agent.tf.disabled     # Quarantined Kubernetes deployment for the LangGraph agent
 └── observability.tf.disabled # Quarantined Prometheus Helm chart deployment
-│
-└── README.md             # Project documentation
 ```
 
 ---
 
-## 🚀 Quick Start Guide
+## Quick Start Guide
 
 ### 1. Environment & Dependency Setup
-Before running the infrastructure or the agent, prepare your local Python environment on your host machine:
+Create an isolated virtual environment and install dependencies:
 
-```powershell
-# Clone the repository (if not already inside it)
-cd C:\ATK\1.GitHub\SRE_AI_Agent_Secure_Infrastructure_Auditor
-
-# Create an isolated Python virtual environment
+```bash
+# Windows
 python -m venv venv
-
-# Activate the virtual environment (PowerShell)
 .\venv\Scripts\Activate.ps1
 
-# Upgrade pip to the latest version
-python -m pip install --upgrade pip
+# Linux/Mac
+python3 -m venv venv
+source venv/bin/activate
 
-# Install the required dependencies
-pip install pydantic-settings python-dotenv requests langgraph langchain-ollama
+# Install dependencies
+pip install -r requirements.txt
 ```
 
 ### 2. Deploy the Security Infrastructure
@@ -159,7 +152,7 @@ Ensure your local Ollama instance is running (`ollama run llama3`), verify your 
 python src/agent.py
 ```
 
-## 🔮 Recommended Future Improvements
+## Recommended Future Improvements
 
 1. **Implement Agent "Tools" (Execution Layer):** Evolve the agent from a passive *diagnoser* to an active *remediator* by adding a `node_execute_tool` to the LangGraph. Equip it with Python functions to run `kubectl get pods`, `kubectl logs`, or `kubectl rollout restart`.
 2. **Re-Enable Real Prometheus:** Migrate the cluster to a more capable machine (or a cloud provider) to re-enable `observability.tf` and swap the mock data in `agent.py` for live PromQL queries.
