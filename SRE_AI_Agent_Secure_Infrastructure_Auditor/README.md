@@ -19,17 +19,18 @@ This AI Agent automates the "Level 1/Level 2" diagnostic triage:
 ---
 
 ## Tech Stack
-* **AI & Orchestration:** * [Ollama](https://ollama.com/) (Local Llama 3 Model)
+* **AI & Orchestration:**
+  * [Ollama](https://ollama.com/) (Local Llama 3 Model)
   * [LangGraph](https://python.langchain.com/v0.1/docs/langgraph/) (State Machine & Agent Logic)
   * [LangChain](https://python.langchain.com/)
-* **Security & Identity:** * [Keycloak](https://www.keycloak.org/) (OIDC Identity Provider)
+* **Security & Identity:**
+  * [Keycloak](https://www.keycloak.org/) (OIDC Identity Provider)
   * [HashiCorp Vault](https://www.vaultproject.io/) (Dynamic Secrets Management)
-* **Observability:** * Prometheus (Architecture target, currently mocked for local execution)
-* **Infrastructure as Code (IaC):** * Terraform
+* **Observability:**
+  * Prometheus (Architecture target, currently mocked for local execution)
+* **Infrastructure as Code (IaC):**
+  * Terraform
   * Kubernetes (Local Docker Desktop)
-* **Language & Config:** * Python 3.11+
-  * `pydantic-settings` (Type-safe environment validation)
-
 ---
 
 ## High-Level Architecture (Hybrid Local Setup)
