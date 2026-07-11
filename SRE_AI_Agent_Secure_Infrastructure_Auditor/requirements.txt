@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+pydantic
+pydantic-settings
+langgraph
+langchain-ollama
+langchain-community
+langchain-openai
+requests
+PyJWT
+cryptography
+httpx
+python-dotenv
