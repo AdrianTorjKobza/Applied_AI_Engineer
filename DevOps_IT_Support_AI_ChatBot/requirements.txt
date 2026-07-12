@@ -1,0 +1,11 @@
+fastapi==0.103.1
+uvicorn==0.23.2
+sqlalchemy==2.0.20
+redis==5.0.0
+strawberry-graphql[fastapi]==0.205.0
+httpx==0.24.1
+sse-starlette==1.6.5
+pydantic-settings==2.0.3
+streamlit==1.32.0
+requests==2.31.0
+pandas==2.2.1
