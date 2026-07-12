@@ -1,10 +1,10 @@
-# 📟 DevOps & IT System AI Troubleshooter
+# DevOps & IT System AI Troubleshooter
 
-An enterprise-grade, local-first log parsing and streaming analytical ecosystem. This application allows DevOps professionals and IT engineers to securely isolate troubleshooting workspaces, stream high-volume crash dumps or configuration anomalies to a local LLM (`llama3`), track system metrics via GraphQL telemetry endpoints, and automatically enforce rate limits via Redis.
+This local-first application allows DevOps professionals and IT engineers to securely isolate troubleshooting workspaces, stream high-volume crash dumps or configuration anomalies to a local LLM (`llama3`), track system metrics via GraphQL telemetry endpoints, and automatically enforce rate limits via Redis.
 
 ---
 
-## 🎯 Use Case
+## Use Case
 
 When infrastructure goes down, engineers are flooded with multi-layer stack traces, obscure database connection faults, or system metrics anomalies. Copy-pasting sensitive proprietary logs into public cloud LLMs presents severe compliance risks. 
 
@@ -16,7 +16,7 @@ This project provides a **100% local, self-contained AI-powered terminal** that:
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology Component | Purpose |
 | :--- | :--- | :--- |
@@ -30,7 +30,7 @@ This project provides a **100% local, self-contained AI-powered terminal** that:
 
 ---
 
-## 📐 High-Level Architecture
+## High-Level Architecture
 
 The system coordinates interactions across three isolated network-boundary tiers:
 
@@ -64,23 +64,19 @@ The system coordinates interactions across three isolated network-boundary tiers
 
 ---
 
-## 📁 Project Folder & File Structure
+## Project Folder & File Structure
 
 ```text
 IT_Support_AI_ChatBot/
 ├── api/
-│   ├── __init__.py
 │   ├── graphql_schema.py       # Defines Strawberry GraphQL Types, Queries, and Resolvers
 │   └── middleware.py           # Implements the sliding-window Redis rate limiter
 ├── core/
-│   ├── __init__.py
 │   ├── config.py               # Pydantic v2 Settings config (binds environment variables)
 │   └── redis_client.py         # Redis cluster client pooling configurations
 ├── db/
-│   ├── __init__.py
 │   └── database.py             # SQLAlchemy models, sessions, and SQLite schema mappings
 ├── services/
-│   ├── __init__.py
 │   └── ollama_service.py       # Non-blocking Async HTTP client streaming from local Ollama
 ├── .env                        # Environment variable configurations (Git ignored)
 ├── frontend.py                 # Multi-tab Streamlit dashboard interface
@@ -90,20 +86,24 @@ IT_Support_AI_ChatBot/
 
 ---
 
-## 🚀 How to Execute Project and What to Expect
+## How to Execute Project and What to Expect
 
 ### Prerequisites
-* Python 3.11+ installed.
 * Redis server running locally on `localhost:6379`.
 * Ollama application installed, running, and the `llama3` model pulled (`ollama pull llama3`).
 
 ### 1. Setup the Virtual Environment and Dependencies
 Open PowerShell/Terminal in the project root directory:
 
-```powershell
+```bash
 # Create and activate virtual environment
+# Windows
 python -m venv venv
-.\venv\Scripts\activate
+.\venv\Scripts\Activate.ps1
+
+# Linux/Mac
+python3 -m venv venv
+source venv/bin/activate
 
 # Install required packages
 pip install -r requirements.txt
@@ -157,7 +157,7 @@ streamlit run frontend.py
 
 ---
 
-## 📈 Future Potential Improvements
+## Future Potential Improvements
 
 > * **Vectorized RAG Subsystems (Retrieval-Augmented Generation):** Integrate a local vector database (such as ChromaDB or Qdrant) to ingest internal runbooks, infrastructure documentation, and architectural markdown structures so Llama3 can cross-reference internal playbooks alongside raw log analysis.
 > * **OAuth2 OIDC Authentication Integration:** Transition the lightweight "Developer Workspace Token" concept into a production-hardened identity management flow via Keycloak or Okta.
