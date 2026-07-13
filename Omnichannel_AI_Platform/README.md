@@ -1,8 +1,8 @@
 # Omnichannel AI Campaign Platform
 
-A highly scalable, asynchronous backend platform designed to generate complex, multi-asset marketing campaigns (Text, Images, and SEO Metadata) using Local AI. 
+A scalable, asynchronous platform designed to generate multi-asset marketing campaigns (Text, Images, and SEO Metadata) using Local AI (Ollama and Qwen 2.5). 
 
-Built with modern Python, this project demonstrates enterprise-grade architectural patterns, including the **REST "202 Accepted" Background Worker Pattern** to prevent HTTP timeouts, and **GraphQL DataLoaders** to efficiently resolve deeply nested AI assets while solving the classic N+1 database query problem.
+This project demonstrates enterprise-grade architectural patterns, including the **REST "202 Accepted" Background Worker Pattern** to prevent HTTP timeouts, and **GraphQL DataLoaders** to efficiently resolve deeply nested AI assets while solving the classic N+1 database query problem.
 
 ---
 
