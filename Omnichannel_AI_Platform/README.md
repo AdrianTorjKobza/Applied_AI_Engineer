@@ -30,7 +30,7 @@ The system is strictly decoupled into distinct functional layers, adhering to SO
 
 ---
 
-## 💻 Technology Stack
+## 💻 Tech Stack
 
 * **Language:** Python 3.11
 * **Web Framework:** FastAPI (REST Ingestion & WebSockets)
