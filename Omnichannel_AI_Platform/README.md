@@ -1,4 +1,4 @@
-# 🚀 Omnichannel AI Campaign Platform
+# Omnichannel AI Campaign Platform
 
 A highly scalable, asynchronous backend platform designed to generate complex, multi-asset marketing campaigns (Text, Images, and SEO Metadata) using Local AI. 
 
@@ -6,14 +6,14 @@ Built with modern Python, this project demonstrates enterprise-grade architectur
 
 ---
 
-## 🎯 The Business Use Case: Omnichannel Product Launch
+## The Business Use Case: Omnichannel Product Launch
 
 Generating AI content (especially multi-modal content) is a computationally heavy and time-consuming process. A standard synchronous HTTP request would simply timeout while waiting for an LLM to write a blog post, extract SEO tags, and render an image.
 
 **This platform solves this by orchestrating an asynchronous DAG (Directed Acyclic Graph) workflow:**
 1. A marketer submits a raw product specification and target audience.
 2. The platform instantly accepts the request and delegates the heavy lifting to a background queue.
-3. A background worker orchestrates calls to local AI models to generate a marketing blog post, extract structured JSON SEO metadata, and generate/mock a promotional image.
+3. A background worker orchestrates calls to local AI models to generate a marketing blog post, extract structured JSON SEO metadata, and generate/mock a promotional image (mock image is generated due to limitation of local environment).
 4. Clients can track the job in real-time and fetch the deeply nested relational data using an optimized GraphQL graph.
 
 ---
