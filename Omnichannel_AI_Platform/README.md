@@ -25,7 +25,7 @@ The system is strictly decoupled into distinct functional layers, adhering to SO
 1. **Ingestion Layer (FastAPI REST):** Accepts the payload, persists an initial `PENDING` state to PostgreSQL, pushes the workload to Redis, and immediately returns a non-blocking `202 Accepted` with a Job ID.
 2. **Message Broker (Redis):** Acts as the robust queuing mechanism connecting the web tier to the background workers.
 3. **Processing Layer (Celery & Ollama):** Background workers consume tasks, manage state transitions (`PROCESSING`, `COMPLETED`, `FAILED`), and orchestrate external HTTP calls to the local AI Engine (Ollama).
-4. **Presentation Layer (Strawberry GraphQL):** Exposes a typed graph of the finalized data. Utilizes **DataLoaders** to batch SQL queries—reducing hundreds of potential DB calls for nested assets/metadata into exactly 3 optimized queries.
+4. **Presentation Layer (Strawberry GraphQL):** Exposes a typed graph of the finalized data. Utilizes **DataLoaders** to batch SQL queries, reducing hundreds of potential DB calls for nested assets/metadata into exactly 3 optimized queries.
 5. **Client Layer (Streamlit):** A lightweight, reactive frontend that triggers jobs and polls the GraphQL endpoint to dynamically render AI assets as they complete.
 
 ---
