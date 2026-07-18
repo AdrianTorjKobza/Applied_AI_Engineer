@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+/* 
+  We removed the body { @apply ... } block because 
+  App.jsx now handles the dark theme natively.
+*/
