@@ -1,13 +1,10 @@
 # WhatsApp AI Message Notification Router
 
 [![Hackathon: HackerRank Orchestrate Aug 2026](https://img.shields.io/badge/Hackathon-HackerRank%20Orchestrate%20Aug%202026-00EA64?style=for-the-badge&logo=hackerrank)](https://github.com/interviewstreet/hackerrank-orchestrate-august26)
-[![Python Version](https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![Local AI: Ollama](https://img.shields.io/badge/Local%20AI-Ollama%20%7C%20qwen2.5vl:7b-FF6F00?style=for-the-badge)](https://ollama.com/)
 [![Vector Store: ChromaDB](https://img.shields.io/badge/Vector%20Store-ChromaDB-8A2BE2?style=for-the-badge)](https://www.trychroma.com/)
 
-An AI-powered, multimodal message notification routing system developed for the **HackerRank Orchestrate August 2026 Hackathon**. Built to execute entirely locally on standard consumer laptops, this system intelligently triages high-volume WhatsApp message streams—incorporating text, image posters, and audio voice notes—into personalized, actionable delivery tiers.
-
----
+An AI-powered, multimodal message notification routing system developed for the **HackerRank Orchestrate August 2026 Hackathon**. Built to execute entirely locally on standard consumer laptops, this system triages high-volume WhatsApp message streams, incorporating text, image posters, and audio voice notes—into personalized, actionable delivery tiers.
 
 ## 1. Problem Statement & Use Case
 
@@ -15,7 +12,7 @@ WhatsApp message streams are inherently noisy. A single user can simultaneously 
 * **Critical interruptions are missed** in high-volume traffic.
 * **Low-value or risky messages disrupt focus** through constant notifications.
 
-### The Solution: Personalized Neuro-Symbolic Triage
+### The Solution: Personalized Triage
 For every incoming message in `dataset/messages.csv`, the router assigns a personalized delivery action based on message semantics, media content, sender history, group settings, and user behavior:
 * **`notify`**: High-priority or time-sensitive messages that warrant an immediate interruption.
 * **`digest`**: Safe and useful content grouped for deferred consumption.
@@ -40,54 +37,55 @@ The project is built around a **Decoupled Hybrid Architecture**, combining proba
 
 ## 3. High-Level Architecture & Data Flow
 
-+----------------------------------+
-                    |  Incoming Raw Message (CSV Row)  |
-                    +----------------------------------+
-                                     |
-                                     v
-                 +---------------------------------------+
-                 |  Stage 1: Media Ingestion & Parsing   |
-                 |  - Voice Notes -> faster-whisper (CPU)|
-                 |  - Images -> Base64 Data URI Loader   |
-                 +---------------------------------------+
-                                     |
-                                     v
-                 +---------------------------------------+
-                 | Stage 2: Sender-Prioritized Retrieval |
-                 |  - Query local ChromaDB vector store  |
-                 |  - Match exact sender_user_id first   |
-                 |  - Fallback to semantic similarity    |
-                 +---------------------------------------+
-                                     |
-                                     v
-                 +---------------------------------------+
-                 | Stage 3: Probabilistic Reasoning (LLM)|
-                 |  - Prompt Ollama VLM (qwen2.5vl:7b)   |
-                 |  - Extract Action, Type, Reason, &    |
-                 |    self-assessed confidence score     |
-                 +---------------------------------------+
-                                     |
-                                     v
-                 +---------------------------------------+
-                 | Stage 4: Deterministic Policy Engine  |
-                 |  - [Safety Override]: Scam/Spam->Mute |
-                 |  - [Mute Override]: Group Mute->Digest|
-                 |  - [Quiet Hours]: Non-Urgent->Digest  |
-                 +---------------------------------------+
-                                     |
-                                     v
-                 +---------------------------------------+
-                 | Stage 5: Multi-Signal Confidence      |
-                 |  - Synthesize LLM certainty, evidence |
-                 |    boost, and media penalties         |
-                 +---------------------------------------+
-                                     |
-                                     v
-                    +----------------------------------+
-                    |   Idempotent Export: output.csv  |
-                    +----------------------------------+
+```text
++---------------------------------------+
+|    Incoming Raw Message (CSV Row)     |
++---------------------------------------+
+                   |
+                   v
++---------------------------------------+
+|  Stage 1: Media Ingestion & Parsing   |
+|  - Voice Notes -> faster-whisper (CPU)|
+|  - Images -> Base64 Data URI Loader   |
++---------------------------------------+
+                   |
+                   v
++---------------------------------------+
+| Stage 2: Sender-Prioritized Retrieval |
+|  - Query local ChromaDB vector store  |
+|  - Match exact sender_user_id first   |
+|  - Fallback to semantic similarity    |
++---------------------------------------+
+                   |
+                   v
++---------------------------------------+
+| Stage 3: Probabilistic Reasoning (LLM)|
+|  - Prompt Ollama VLM (qwen2.5vl:7b)   |
+|  - Extract Action, Type, Reason, &    |
+|    self-assessed confidence score     |
++---------------------------------------+
+                   |
+                   v
++---------------------------------------+
+| Stage 4: Deterministic Policy Engine  |
+|  - [Safety Override]: Scam/Spam->Mute |
+|  - [Mute Override]: Group Mute->Digest|
+|  - [Quiet Hours]: Non-Urgent->Digest  |
++---------------------------------------+
+                   |
+                   v
++---------------------------------------+
+| Stage 5: Multi-Signal Confidence      |
+|  - Synthesize LLM certainty, evidence |
+|    boost, and media penalties         |
++---------------------------------------+
+                   |
+                   v
++---------------------------------------+
+|     Idempotent Export: output.csv     |
++---------------------------------------+
 
-
+```
 ### Core Architectural Features
 * **SOLID & Domain-Driven Design (DDD):** Domain logic (`rules.py`, `confidence.py`) is cleanly decoupled from infrastructure services (`audio_service.py`, `llm_router.py`, `vector_store.py`).
 * **Idempotent Vector Upserts:** `VectorStoreService` indexes `message_history.csv` using deterministic message IDs. Repeated executions produce identical vector store states without record duplication.
@@ -98,7 +96,7 @@ The project is built around a **Decoupled Hybrid Architecture**, combining proba
 ---
 
 ## 4. Folder & File Structure
-
+```text
 ├── dataset/
 │   ├── media/
 │   │   ├── audio/                  # Audio voice note files (.ogg, .wav, .mp3, .m4a)
@@ -128,36 +126,24 @@ The project is built around a **Decoupled Hybrid Architecture**, combining proba
 ├── main.py                         # Stream-resilient application CLI entry point
 ├── requirements.txt                # Python dependencies
 └── README.md                       # Project documentation
-
+```
 
 ---
 
 ## 5. Setup & Execution Guide
 
 ### Prerequisites
-1. **Python 3.10+** installed locally.
-2. **Ollama** installed and running on `http://localhost:11434`.
-3. Target Vision-Language Model pulled into your local Ollama registry:
-   ```bash
-   ollama pull qwen2.5vl:7b
-
+1. Python 3.10+ installed locally.
+2. Ollama installed and running on `http://localhost:11434`.
+3. Target Vision-Language Model pulled into your local Ollama registry: `ollama pull qwen2.5vl:7b`
 
 ### Step 1: Environment Initialization
-# Create virtual environment
-python -m venv venv
-
-# Activate on Linux / macOS
-source venv/bin/activate
-
-# Activate on Windows PowerShell
-.\venv\Scripts\Activate.ps1
-
-# Install mandatory dependencies
-pip install --upgrade pip
-pip install -r requirements.txt
+1. Create virtual environment: `python -m venv venv`
+2. Activate environement: on Linux / macOS: `source venv/bin/activate` | on Windows: `.\venv\Scripts\Activate.ps1`
+3. Install mandatory dependencies: `pip install --upgrade pip` and `pip install -r requirements.txt`
 
 ###  Step 2: Running the System
-python -u main.py
+`python -u main.py`
 
 ## 7. Architectural Trade-Offs (Local Laptop Compute)
 
