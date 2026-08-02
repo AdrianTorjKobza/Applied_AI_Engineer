@@ -1,0 +1,7 @@
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+pandas>=2.1.0
+chromadb>=0.4.20
+faster-whisper>=1.0.0
+httpx>=0.25.0
+tqdm>=4.66.0
