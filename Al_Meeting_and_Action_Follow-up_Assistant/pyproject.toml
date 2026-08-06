@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=68.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "local-meeting-assistant"
+version = "0.1.0"
+description = "Local-first AI Meeting Assistant using Ollama, LangGraph, and WhisperX"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "TAurus" }]
+
+dependencies = [
+    # Core LLM & Graph Orchestration
+    "langgraph>=0.2.0",
+    "langchain>=0.2.0",
+    "langchain-core>=0.2.0",
+    "langchain-ollama>=0.1.0",
+    
+    # Data Validation & Configuration
+    "pydantic>=2.8.0",
+    "pydantic-settings>=2.3.0",
+    
+    # Audio & Diarization (Intel CPU Optimized)
+    "whisperx>=3.1.0",
+    "faster-whisper>=1.0.0",
+    "pyannote.audio>=3.1.1",
+    "torchaudio>=2.3.0",
+    "torch>=2.3.0",
+    
+    # CLI & User Experience (For clean HITL prompt display)
+    "typer>=0.12.0",
+    "rich>=13.7.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2.0",
+    "pytest-asyncio>=0.23.0",
+    "ruff>=0.5.0",
+    "mypy>=1.10.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.mypy]
+strict = true
+plugins = ["pydantic.mypy"]
